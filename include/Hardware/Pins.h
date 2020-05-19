@@ -1,24 +1,18 @@
 #pragma once
 
 enum Teensy_Pins {
-  PIN_LED_1_R = 2,
-  PIN_LED_2_R = 3,
-  PIN_LED_3_R = 4,
-  PIN_LED_4_R = 5,
-  PIN_LED_5_R = 6,
-  PIN_LED_6_R = 7,
-  PIN_LED_7_R = 8,
-  PIN_LED_8_R = 9,
-
   PIN_PB_CS = 23,
   PIN_PB_BS = 22,
   PIN_PB_CLR = 21,
+  PIN_PB_POS = 3,
+  PIN_PB_NEG = 2,
+
   PIN_LED_CS = 15,
   PIN_LED_BS = 14,
 
-  PIN_SLD_DIN = 2,
-  PIN_SLD_CLK = 3,
-  PIN_SLD_CS = 4
+  PIN_SLD_DIN = 10,
+  PIN_SLD_CLK = 11,
+  PIN_SLD_CS = 12
 };
 
 enum MCP_Pins {

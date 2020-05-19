@@ -28,6 +28,8 @@ Peripherals::Peripherals()
     channelSelectButton = new TeensyButton(PIN_PB_CS, DebounceTime);
     barSelectButton = new TeensyButton(PIN_PB_BS, DebounceTime);
     clearButton = new TeensyButton(PIN_PB_CLR, DebounceTime);
+    positiveButton = new TeensyButton(PIN_PB_POS, DebounceTime);
+    negativeButton = new TeensyButton(PIN_PB_NEG, DebounceTime);
 
     redLeds = {
         new PCALed(pca, PCA9685_LED0, true),
@@ -74,6 +76,8 @@ Peripherals::~Peripherals()
     delete channelSelectButton;
     delete barSelectButton;
     delete clearButton;
+    delete positiveButton;
+    delete negativeButton;
 
     for (auto l : redLeds)
         delete l;
@@ -121,6 +125,8 @@ void Peripherals::init(unsigned long startupDelay)
     channelSelectButton->init();
     barSelectButton->init();
     clearButton->init();
+    positiveButton->init();
+    negativeButton->init();
 }
 
 void Peripherals::updateButtons()
@@ -128,6 +134,8 @@ void Peripherals::updateButtons()
     channelSelectButton->update();
     barSelectButton->update();
     clearButton->update();
+    positiveButton->update();
+    negativeButton->update();
     for (auto button : beatButtons)
         button->update();
 }

@@ -24,7 +24,7 @@ MIDI_CREATE_INSTANCE(UsbTransport, sUsbTransport, MIDI);
 MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
-#define _ENABLE_SERIAL 0
+#define _ENABLE_SERIAL 1
 #if _ENABLE_SERIAL == 1
 #define DBG Serial.printf
 #else
@@ -176,6 +176,8 @@ void loop()
     const bool barSelect = p->barSelectButton->read() == LOW;
     const bool instrumentSelect = p->channelSelectButton->read() == LOW;
     const bool clear = p->clearButton->read() == LOW;
+    const bool positivePressed = p->positiveButton->fallingEdge();
+    const bool negativePressed = p->negativeButton->fallingEdge();
     if (clear) {
         seq->clearInstruments();
         for (auto led : p->blueLeds) {
@@ -200,6 +202,12 @@ void loop()
     }
 
     p->clearLeds();
+
+    if (positivePressed)
+        DBG("Pos pressed\n");
+
+    if (negativePressed)
+        DBG("Neg pressed\n");
 
     // Update beat LEDs
     for (size_t i = 0; i < p->beatButtons.size(); ++i) {

@@ -24,6 +24,8 @@ struct Peripherals
     ButtonBase *channelSelectButton;
     ButtonBase *barSelectButton;
     ButtonBase *clearButton;
+    ButtonBase *positiveButton;
+    ButtonBase *negativeButton;
 
     std::array<LedBase *, 8> redLeds;
     std::array<LedBase *, 8> blueLeds;

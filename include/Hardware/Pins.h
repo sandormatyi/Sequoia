@@ -14,7 +14,11 @@ enum Teensy_Pins {
   PIN_PB_BS = 22,
   PIN_PB_CLR = 21,
   PIN_LED_CS = 15,
-  PIN_LED_BS = 14
+  PIN_LED_BS = 14,
+
+  PIN_SLD_DIN = 2,
+  PIN_SLD_CLK = 3,
+  PIN_SLD_CS = 4
 };
 
 enum MCP_Pins {

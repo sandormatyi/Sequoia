@@ -5,11 +5,14 @@
 #include "Hardware/Led/TeensyLed.h"
 #include "Hardware/Led/MCPLed.h"
 #include "Hardware/Led/PCALed.h"
-#include <PCA9685.h>
+
 
 constexpr unsigned long DebounceTime = 10; // 10 ms debounce
 
-Peripherals::Peripherals(Adafruit_MCP23017 &mcp, PCA9685 &pca)
+Peripherals::Peripherals()
+    : sld(PIN_SLD_DIN, PIN_SLD_CLK, PIN_SLD_CS)
+    , mcp()
+    , pca(0x0, PCA9685_MODE_LED_DIRECT, 800.0)
 {
     beatButtons = {
         new MCPButton(mcp, PIN_PB_1, DebounceTime),
@@ -34,8 +37,9 @@ Peripherals::Peripherals(Adafruit_MCP23017 &mcp, PCA9685 &pca)
         new PCALed(pca, PCA9685_LED4, true),
         new PCALed(pca, PCA9685_LED5, true),
         new PCALed(pca, PCA9685_LED6, true),
-        new PCALed(pca, PCA9685_LED7, true)};
-
+        new PCALed(pca, PCA9685_LED7, true)
+    };
+    
    blueLeds = {
         new PCALed(pca, PCA9685_LED8, true),
         new PCALed(pca, PCA9685_LED9, true),
@@ -44,8 +48,9 @@ Peripherals::Peripherals(Adafruit_MCP23017 &mcp, PCA9685 &pca)
         new PCALed(pca, PCA9685_LED12, true),
         new PCALed(pca, PCA9685_LED13, true),
         new PCALed(pca, PCA9685_LED14, true),
-        new PCALed(pca, PCA9685_LED15, true)};
-
+        new PCALed(pca, PCA9685_LED15, true)
+    };
+    
     greenLeds = {
         new MCPLed(mcp, PIN_LED_1_G, true),
         new MCPLed(mcp, PIN_LED_2_G, true),
@@ -54,8 +59,9 @@ Peripherals::Peripherals(Adafruit_MCP23017 &mcp, PCA9685 &pca)
         new MCPLed(mcp, PIN_LED_5_G, true),
         new MCPLed(mcp, PIN_LED_6_G, true),
         new MCPLed(mcp, PIN_LED_7_G, true),
-        new MCPLed(mcp, PIN_LED_8_G, true)};
-
+        new MCPLed(mcp, PIN_LED_8_G, true)
+    };
+    
     channelSelectLed = new TeensyLed(PIN_LED_CS, true);
     barSelectLed = new TeensyLed(PIN_LED_BS, true);
 }
@@ -82,16 +88,29 @@ Peripherals::~Peripherals()
     delete barSelectLed;
 }
 
-void Peripherals::init()
+void Peripherals::init(unsigned long startupDelay)
 {
+    pca.setup();
     for (auto led : redLeds)
         led->init();
 
     for (auto led : blueLeds)
         led->init();
 
+    delay(startupDelay);
+
+    mcp.begin();
     for (auto led : greenLeds)
         led->init();
+
+    delay(startupDelay);
+
+    sld.shutdown(0, false);
+    sld.setIntensity(0, 8); // sets brightness (0~15 possible values)
+    sld.clearDisplay(0);
+    sld.setScanLimit(0, 7);
+    
+    delay(startupDelay);
 
     channelSelectLed->init();
     barSelectLed->init();

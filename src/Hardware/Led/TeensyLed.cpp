@@ -8,7 +8,7 @@ TeensyLed::TeensyLed(uint8_t pin, bool inverted /*= false*/)
 {
 }
 
-void TeensyLed::init()
+void TeensyLed::_init()
 {
     pinMode(_pin, OUTPUT);
 }
@@ -23,8 +23,9 @@ void TeensyLed::_turnOff()
     digitalWrite(_pin, _inverted ? HIGH : LOW);
 }
 
-void TeensyLed::_setPWMValue(uint16_t value)
+void TeensyLed::_setPWMValue(uint8_t percent)
 {
+    int value = percent * 256 / 100;
     switch (_pin)
     {
     case 3:
@@ -40,6 +41,11 @@ void TeensyLed::_setPWMValue(uint16_t value)
         analogWrite(_pin, _inverted ? 256 - value : value);
         break;
     default:
+        // if (value < 128) {
+        //     digitalWrite(_pin, LOW)
+        // } else {
+        //     digitalWrite(_pin, HIGH);
+        // }
         break;
     }
 }

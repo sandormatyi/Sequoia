@@ -4,28 +4,22 @@ void LedBase::turnOn()
 {
     _nextState = State::On;
     if (!_lazy)
-    {
         update();
-    }
 }
 
 void LedBase::turnOff()
 {
     _nextState = State::Off;
     if (!_lazy)
-    {
         update();
-    }
 }
 
-void LedBase::setPWMValue(uint16_t value)
+void LedBase::setPWMValue(uint8_t percent)
 {
     _nextState = State::PWM;
-    _pwmValue = value;
+    _pwmPercent = percent;
     if (!_lazy)
-    {
         update();
-    }
 }
 
 void LedBase::update()
@@ -41,7 +35,7 @@ void LedBase::update()
             _turnOff();
             break;
         case State::PWM:
-            _setPWMValue(_pwmValue);
+            _setPWMValue(_pwmPercent);
             break;
         default:
             break;

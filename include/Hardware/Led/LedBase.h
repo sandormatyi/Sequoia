@@ -7,10 +7,10 @@ class LedBase
 public:
     virtual ~LedBase() = default;
 
-    virtual void init() {}
+    void init() { _init(); _turnOff(); }
     void turnOn();
     void turnOff();
-    void setPWMValue(uint16_t value);
+    void setPWMValue(uint8_t percent);
     void update();
 
 protected:
@@ -18,21 +18,22 @@ protected:
     LedBase(const LedBase &) = delete;
     LedBase(const LedBase &&) = delete;
 
+    virtual void _init() {}
     virtual void _turnOn() = 0;
     virtual void _turnOff() = 0;
-    virtual void _setPWMValue(uint16_t value) = 0;
+    virtual void _setPWMValue(uint8_t percent) = 0;
 
 private:
     const bool _lazy;
 
-    enum class State
+    enum class State : uint8_t
     {
         Init,
         On,
         Off,
         PWM
     };
-    int _pwmValue;
+    uint8_t _pwmPercent;
     State _currentState = State::Init;
     State _nextState = State::Init;
 };

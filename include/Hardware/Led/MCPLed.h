@@ -9,12 +9,12 @@ class MCPLed : public LedBase
 public:
     MCPLed(Adafruit_MCP23017 &mcp, uint8_t pin, bool inverted = false);
     virtual ~MCPLed() = default;
-    void init() override;
 
 protected:
+    void _init() override;
     void _turnOn() override;
     void _turnOff() override;
-    void _setPWMValue(uint16_t value) override;
+    void _setPWMValue(uint8_t percent) override;
 
 private:
     Adafruit_MCP23017 &_mcp;

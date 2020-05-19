@@ -1,19 +1,24 @@
+#include <PCA9685.h>
+#include <LedControl.h>
+#include <Adafruit_MCP23017.h>
 #include <array>
 
 class ButtonBase;
 class LedBase;
-class Adafruit_MCP23017;
-class PCA9685;
 
 struct Peripherals
 {
-    Peripherals(Adafruit_MCP23017 &mcp, PCA9685 &pca);
+    Peripherals();
     ~Peripherals();
 
-    void init();
+    void init(unsigned long startupDelay);
     void updateButtons();
     void clearLeds();
     void updateLeds();
+
+    LedControl sld;
+    Adafruit_MCP23017 mcp;
+    PCA9685 pca;
 
     std::array<ButtonBase *, 8> beatButtons;
     ButtonBase *channelSelectButton;

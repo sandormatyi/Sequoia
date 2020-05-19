@@ -10,16 +10,25 @@ PCALed::PCALed(PCA9685 &pca, uint8_t pin, bool inverted /*= false*/)
 }
 
 void PCALed::_turnOn() 
-{ 
-    _setPWMValue(PCA9685_FULL_ON); 
+{
+    if (_inverted) {
+        _pca.getPin(_pin).fullOnAndWrite();
+    } else {
+        _pca.getPin(_pin).fullOffAndWrite();
+    }
 }
 
 void PCALed::_turnOff()
 { 
-    _setPWMValue(PCA9685_FULL_OFF); 
+    if (_inverted) {
+        _pca.getPin(_pin).fullOffAndWrite();
+    } else {
+        _pca.getPin(_pin).fullOnAndWrite();
+    }
 }
 
-void PCALed::_setPWMValue(uint16_t value)
-{ 
+void PCALed::_setPWMValue(uint8_t percent)
+{
+    uint16_t value = (uint16_t(percent) * PCA9685_MAX_VALUE) / 100;
     _pca.getPin(_pin).setValueAndWrite(_inverted ? value : PCA9685_MAX_VALUE - value); 
 }

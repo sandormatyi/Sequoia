@@ -9,7 +9,7 @@ MCPLed::MCPLed(Adafruit_MCP23017 &mcp, uint8_t pin, bool inverted /*= false*/)
 {
 }
 
-void MCPLed::init()
+void MCPLed::_init()
 {
     _mcp.pinMode(_pin, OUTPUT);
     _mcp.pullUp(_pin, LOW);
@@ -25,6 +25,6 @@ void MCPLed::_turnOff()
     _mcp.digitalWrite(_pin, _inverted ? HIGH : LOW);
 }
 
-void MCPLed::_setPWMValue(uint16_t value)
+void MCPLed::_setPWMValue(uint8_t percent)
 {
 }

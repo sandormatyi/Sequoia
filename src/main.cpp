@@ -336,12 +336,12 @@ void loop()
             ;
         } else if (instrumentSelect) {
             Note note = seq->getInstrument(currentInstrument).getDefaultNote();
-            note._velocity = max(32 * newValue, 127);
+            note._velocity = min(32 * newValue, 127);
             seq->getInstrument(currentInstrument).setDefaultNote(note);
             printInstrumentInfo(currentInstrument);
         } else if (editedNote > -1) {
             Note note = seq->getInstrument(currentInstrument).getNote(editedNote);
-            note._velocity = max(32 * newValue, 127);
+            note._velocity = min(32 * newValue, 127);
             seq->getInstrument(currentInstrument).setNote(editedNote, note);
             printNoteInfo(currentInstrument, editedNote);
         }

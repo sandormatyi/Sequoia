@@ -5,6 +5,7 @@
 
 class ButtonBase;
 class LedBase;
+class SliderBase;
 
 struct Peripherals
 {
@@ -32,4 +33,6 @@ struct Peripherals
     std::array<LedBase *, 8> greenLeds;
     LedBase *channelSelectLed;
     LedBase *barSelectLed;
+
+    SliderBase* slider;
 };

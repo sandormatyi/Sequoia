@@ -361,9 +361,10 @@ void loop()
         p->blueLeds[currentInstrument]->turnOn();
     } else {
         colorActiveNotes(currentInstrument, currentBar);
+        const auto currentBeatLed = (currentBeat + Instrument::s_beatNumber - 1) % Instrument::s_beatNumber - currentBar * 8;
         for (size_t i = 0; i < p->beatButtons.size(); ++i) {
-            if (isPlaying && currentBeat >= currentBar * 8 && currentBeat < (currentBar + 1) * 8) {
-                p->greenLeds[currentBeat - currentBar * 8]->turnOn();
+            if (isPlaying && (currentBeatLed >= 0 && currentBeatLed < 8)) {
+                p->greenLeds[currentBeatLed]->turnOn();
             }
             // if (seq->getInstrument(currentInstrument).isActiveNote(i + currentBar * 8)) {
             //     p->redLeds[i]->turnOn();

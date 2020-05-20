@@ -1,8 +1,10 @@
 #include "Sequencer/Instrument.h"
 #include <cstring>
 
-Instrument::Instrument(const char *name, Note note)
-    : _note(note)
+Instrument::Instrument(const char *name, Note defaultNote)
+    : _defaultNote(defaultNote)
+    , _notes()
+    , _activeNotes()
 {
     strcpy(_name, name);
     clear();
@@ -13,28 +15,45 @@ const char *Instrument::getName() const
     return _name;
 }
 
-const Note &Instrument::getNote() const
+const Note &Instrument::getDefaultNote() const
 {
-    return _note;
+    return _defaultNote;
 }
 
-bool Instrument::isBeatSet(uint8_t idx) const
+void Instrument::setDefaultNote(Note defaultNote)
 {
-    return _beats[idx];
+    _defaultNote = defaultNote;
+    for (uint8_t i = 0; i < s_beatNumber; ++i) {
+        if (!isActiveNote(i)) {
+            setNote(i, defaultNote);
+        }
+    }
 }
 
-void Instrument::setBeat(uint8_t idx, bool value)
+bool Instrument::isActiveNote(uint8_t idx) const
 {
-    _beats[idx] = value;
+    return _activeNotes[idx];
 }
 
-void Instrument::toggleBeat(uint8_t idx)
+const Note& Instrument::getNote(uint8_t idx) const
 {
-    _beats[idx] = !_beats[idx];
+    return _notes[idx];
+}
+
+void Instrument::setNote(uint8_t idx, Note note) 
+{
+    _notes[idx] = note;
+}
+
+void Instrument::toggleNote(uint8_t idx)
+{
+    _activeNotes[idx] = !_activeNotes[idx];
 }
 
 void Instrument::clear()
 {
-    for (uint8_t i = 0; i < s_beatNumber; ++i)
-        _beats[i] = false;
+    for (uint8_t i = 0; i < s_beatNumber; ++i) {
+        _notes[i] = _defaultNote;
+        _activeNotes[i] = false;
+    }
 }

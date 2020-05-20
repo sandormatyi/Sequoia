@@ -9,17 +9,23 @@ class Instrument
 public:
     static constexpr uint8_t s_beatNumber = 16;
 
-    Instrument(const char *name, Note note);
+    Instrument(const char *name, Note defaultNote);
 
     const char* getName() const;
-    const Note& getNote() const;
-    bool isBeatSet(uint8_t idx) const;
-    void setBeat(uint8_t idx, bool value);
-    void toggleBeat(uint8_t idx);
+    const Note &getDefaultNote() const;
+    void setDefaultNote(Note defaultNote);
+
+    bool isActiveNote(uint8_t idx) const;
+
+    const Note& getNote(uint8_t idx) const;
+    void setNote(uint8_t idx, Note note);
+    void toggleNote(uint8_t idx);
+
     void clear();
 
 private:
     char _name[5];
-    Note _note;
-    std::array<bool, s_beatNumber> _beats;
+    Note _defaultNote;
+    std::array<Note, s_beatNumber> _notes;
+    std::array<bool, s_beatNumber> _activeNotes;
 };

@@ -3,14 +3,14 @@
 Sequencer::Sequencer()
 {
     _instruments = {
-        new Instrument("Kick", 36),
-        new Instrument("Snr ", 38),
-        new Instrument("CHat", 42),
-        new Instrument("OHat", 46),
-        new Instrument("LTom", 47),
-        new Instrument("HTom", 50),
-        new Instrument("Clap", 39),
-        new Instrument("Cymb", 49)
+        new Instrument("Kick", Note(36, 127, 10)),
+        new Instrument("Snr ", Note(38, 127, 10)),
+        new Instrument("CHat", Note(42, 127, 10)),
+        new Instrument("OHat", Note(46, 127, 10)),
+        new Instrument("LTom", Note(47, 127, 10)),
+        new Instrument("HTom", Note(48, 127, 10)),
+        new Instrument("Clap", Note(39, 127, 10)),
+        new Instrument("ACID", Note(36, 127, 1))
     };
 }
 
@@ -35,8 +35,8 @@ std::vector<Note> Sequencer::getNotes(uint8_t beatNumber)
 {
     std::vector<Note> result;
     for (auto instrument : _instruments) {
-        if (instrument->isBeatSet(beatNumber))
-            result.push_back(instrument->getNote());
+        if (instrument->isActiveNote(beatNumber))
+            result.push_back(instrument->getNote(beatNumber));
     }
     return result;
 }

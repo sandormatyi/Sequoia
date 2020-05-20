@@ -34,6 +34,7 @@ private:
         PWM
     };
     uint8_t _pwmPercent;
+    uint8_t _nextPwmPercent;
     State _currentState = State::Init;
     State _nextState = State::Init;
 };

@@ -112,28 +112,34 @@ void playStartupAnimation()
 void colorActiveNotes(uint8_t instrumentIdx, uint8_t barIdx) 
 {
     const auto &instrument = seq->getInstrument(instrumentIdx);
-    uint8_t minNote = 255;
-    uint8_t maxNote = 0;
+    // uint8_t minNote = 255;
+    // uint8_t maxNote = 0;
+    // for (size_t i = 0; i < p->beatButtons.size(); ++i) {
+    //     const auto idx = i + (barIdx * 8);
+    //     if (instrument.isActiveNote(idx)) {
+    //         const auto &note = instrument.getNote(idx);
+    //         if (note._noteNumber < minNote)
+    //             minNote = note._noteNumber;
+
+    //         if (note._noteNumber > maxNote)
+    //             maxNote = note._noteNumber;
+    //     }
+    // }
+    // const auto range = maxNote - minNote;
+    const auto &defaultNote = instrument.getDefaultNote();
+    constexpr auto range = 12;
+    const auto maxNote = defaultNote._noteNumber + range;
+    const auto minNote = defaultNote._noteNumber - range;
+
     for (size_t i = 0; i < p->beatButtons.size(); ++i) {
         const auto idx = i + (barIdx * 8);
         if (instrument.isActiveNote(idx)) {
             const auto &note = instrument.getNote(idx);
-            if (note._noteNumber < minNote)
-                minNote = note._noteNumber;
+            const auto diffFromMax = (note._noteNumber > maxNote) ? 0 : 
+                                     (note._noteNumber < minNote) ? range * 2 :
+                                      maxNote - note._noteNumber;
 
-            if (note._noteNumber > maxNote)
-                maxNote = note._noteNumber;
-        }
-    }
-
-    const auto range = maxNote - minNote;
-
-    for (size_t i = 0; i < p->beatButtons.size(); ++i) {
-        const auto idx = i + (barIdx * 8);
-        if (instrument.isActiveNote(idx)) {
-            const auto &note = instrument.getNote(idx);
-            const auto diffFromMax = maxNote - note._noteNumber;
-            const auto normalizedDiff = (range == 0) ? 0.0f : float(diffFromMax) / float(range);
+            const auto normalizedDiff = float(diffFromMax) / float(range * 2);
             const auto normalizedVelocity = float(note._velocity) / 127.0f;
 
             p->redLeds[i]->setPWMValue(uint8_t(100.0f * normalizedVelocity * (1.0f - normalizedDiff)));

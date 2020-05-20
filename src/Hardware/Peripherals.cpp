@@ -5,6 +5,7 @@
 #include "Hardware/Led/TeensyLed.h"
 #include "Hardware/Led/MCPLed.h"
 #include "Hardware/Led/PCALed.h"
+#include "Hardware/Slider/TeensySlider.h"
 
 
 constexpr unsigned long DebounceTime = 10; // 10 ms debounce
@@ -66,6 +67,8 @@ Peripherals::Peripherals()
     
     channelSelectLed = new TeensyLed(PIN_LED_CS, true);
     barSelectLed = new TeensyLed(PIN_LED_BS, true);
+
+    slider = new TeensySlider(A3, 4);
 }
 
 Peripherals::~Peripherals()
@@ -90,6 +93,8 @@ Peripherals::~Peripherals()
 
     delete channelSelectLed;
     delete barSelectLed;
+
+    delete slider;
 }
 
 void Peripherals::init(unsigned long startupDelay)
@@ -110,7 +115,7 @@ void Peripherals::init(unsigned long startupDelay)
     delay(startupDelay);
 
     sld.shutdown(0, false);
-    sld.setIntensity(0, 8); // sets brightness (0~15 possible values)
+    sld.setIntensity(0, 12); // sets brightness (0~15 possible values)
     sld.clearDisplay(0);
     sld.setScanLimit(0, 7);
     
@@ -127,6 +132,8 @@ void Peripherals::init(unsigned long startupDelay)
     clearButton->init();
     positiveButton->init();
     negativeButton->init();
+
+    slider->init();
 }
 
 void Peripherals::updateButtons()

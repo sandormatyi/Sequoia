@@ -31,6 +31,7 @@ Peripherals::Peripherals()
     clearButton = new TeensyButton(PIN_PB_CLR, DebounceTime);
     positiveButton = new TeensyButton(PIN_PB_POS, DebounceTime);
     negativeButton = new TeensyButton(PIN_PB_NEG, DebounceTime);
+    muteButton = new TeensyButton(PIN_PB_MUTE, DebounceTime);
 
     redLeds = {
         new PCALed(pca, PCA9685_LED0, true),
@@ -81,6 +82,7 @@ Peripherals::~Peripherals()
     delete clearButton;
     delete positiveButton;
     delete negativeButton;
+    delete muteButton;
 
     for (auto l : redLeds)
         delete l;
@@ -132,6 +134,7 @@ void Peripherals::init(unsigned long startupDelay)
     clearButton->init();
     positiveButton->init();
     negativeButton->init();
+    muteButton->init();
 
     slider->init();
 }
@@ -143,6 +146,7 @@ void Peripherals::updateButtons()
     clearButton->update();
     positiveButton->update();
     negativeButton->update();
+    muteButton->update();
     for (auto button : beatButtons)
         button->update();
 }

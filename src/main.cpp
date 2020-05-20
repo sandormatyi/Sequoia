@@ -239,17 +239,11 @@ void loop()
 
     const bool barSelect = p->barSelectButton->read() == LOW;
     const bool instrumentSelect = p->channelSelectButton->read() == LOW;
-    const bool clear = p->clearButton->read() == LOW;
+    const bool clearPressed = p->clearButton->read() == LOW;
     const bool positivePressed = p->positiveButton->fallingEdge();
     const bool negativePressed = p->negativeButton->fallingEdge();
-    if (clear) {
-        seq->clearInstruments();
-        for (auto led : p->blueLeds) {
-            led->turnOn();
-            led->update();
-        }
-        return;
-    }
+    const bool mutePressed = p->muteButton->fallingEdge();
+    const bool muteReleased = p->muteButton->risingEdge();
 
     for (size_t i = 0; i < p->beatButtons.size(); ++i) {
         if (p->beatButtons[i]->fallingEdge()) {
@@ -279,7 +273,27 @@ void loop()
             }
         }
     }
-
+    if (clearPressed) {
+        if (barSelect) {
+            ;
+        } else if (instrumentSelect) {
+            seq->clearInstrument(currentInstrument);
+            for (auto led : p->blueLeds) {
+                led->turnOn();
+                led->update();
+            }
+            return;
+        } else if (editedNote > -1) {
+            ;
+        } else {
+            seq->clearInstruments();
+            for (auto led : p->blueLeds) {
+                led->turnOn();
+                led->update();
+            }
+        }
+        return;
+    }
     if (positivePressed || negativePressed) {
         const auto increment = positivePressed ? 1 : -1;
         if (barSelect) {
@@ -295,6 +309,20 @@ void loop()
             seq->getInstrument(currentInstrument).setNote(editedNote, note);
             printNoteInfo(currentInstrument, editedNote);
         }
+    }
+    if (mutePressed) {
+        if (barSelect) {
+            ;
+        } else if (instrumentSelect) {
+            seq->muteInstrument(currentInstrument, true);
+        } else if (editedNote > -1) {
+            ;
+        } else {
+            seq->muteAllInstruments(true);
+        }
+    }
+    if (muteReleased) {
+        seq->muteAllInstruments(false);
     }
     if (sliderUpdated) {
         const auto newValue = p->slider->readLevel();
@@ -312,6 +340,7 @@ void loop()
             printNoteInfo(currentInstrument, editedNote);
         }
     }
+
 
     p->clearLeds();
 

@@ -12,6 +12,8 @@ Sequencer::Sequencer()
         new Instrument("Clap", Note(39, 127, 10)),
         new Instrument("ACID", Note(36, 127, 1))
     };
+
+    muteAllInstruments(false);
 }
 
 Sequencer::~Sequencer()
@@ -25,6 +27,11 @@ Instrument& Sequencer::getInstrument(uint8_t idx)
     return *_instruments[idx];
 }
 
+void Sequencer::clearInstrument(uint8_t idx)
+{
+    _instruments[idx]->clear();
+}
+
 void Sequencer::clearInstruments()
 {
     for (auto instrument : _instruments)
@@ -34,9 +41,23 @@ void Sequencer::clearInstruments()
 std::vector<Note> Sequencer::getNotes(uint8_t beatNumber)
 {
     std::vector<Note> result;
-    for (auto instrument : _instruments) {
-        if (instrument->isActiveNote(beatNumber))
-            result.push_back(instrument->getNote(beatNumber));
+    for (size_t i = 0; i < _instruments.size(); ++i) {
+        if (_isMuted[i])
+            continue;
+
+        if (_instruments[i]->isActiveNote(beatNumber))
+            result.push_back(_instruments[i]->getNote(beatNumber));
     }
     return result;
+}
+
+void Sequencer::muteInstrument(uint8_t idx, bool isMuted)
+{
+    _isMuted[idx] = isMuted;
+}
+
+void Sequencer::muteAllInstruments(bool isMuted)
+{
+    for (size_t i = 0; i < _instruments.size(); ++i)
+        _isMuted[i] = isMuted;
 }

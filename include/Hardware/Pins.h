@@ -4,6 +4,7 @@ enum Teensy_Pins {
   PIN_PB_CS = 23,
   PIN_PB_BS = 22,
   PIN_PB_CLR = 21,
+  PIN_PB_MUTE = 4,
   PIN_PB_POS = 3,
   PIN_PB_NEG = 2,
 

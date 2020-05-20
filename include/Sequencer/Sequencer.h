@@ -14,10 +14,15 @@ public:
     ~Sequencer();
 
     Instrument& getInstrument(uint8_t idx);
+    void clearInstrument(uint8_t idx);
     void clearInstruments();
 
     std::vector<Note> getNotes(uint8_t beatNumber);
 
+    void muteInstrument(uint8_t idx, bool isMuted);
+    void muteAllInstruments(bool isMuted);
+
 private:
     std::array<Instrument*, s_instrumentNumber> _instruments;
+    std::array<bool, s_instrumentNumber> _isMuted;
 };

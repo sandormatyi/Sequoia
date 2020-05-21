@@ -14,104 +14,89 @@ Peripherals::Peripherals()
     : sld(PIN_SLD_DIN, PIN_SLD_CLK, PIN_SLD_CS)
     , mcp()
     , pca(0x0, PCA9685_MODE_LED_DIRECT, 800.0)
+    // Buttons
+    , beatButtons{
+        std::make_unique<MCPButton>(mcp, PIN_PB_1, DebounceTime),
+        std::make_unique<MCPButton>(mcp, PIN_PB_2, DebounceTime),
+        std::make_unique<MCPButton>(mcp, PIN_PB_3, DebounceTime),
+        std::make_unique<MCPButton>(mcp, PIN_PB_4, DebounceTime),
+        std::make_unique<MCPButton>(mcp, PIN_PB_5, DebounceTime),
+        std::make_unique<MCPButton>(mcp, PIN_PB_6, DebounceTime),
+        std::make_unique<MCPButton>(mcp, PIN_PB_7, DebounceTime),
+        std::make_unique<MCPButton>(mcp, PIN_PB_8, DebounceTime)}
+    , channelSelectButton(std::make_unique<TeensyButton>(PIN_PB_CS, DebounceTime))
+    , barSelectButton(std::make_unique<TeensyButton>(PIN_PB_BS, DebounceTime))
+    , clearButton(std::make_unique<TeensyButton>(PIN_PB_CLR, DebounceTime))
+    , positiveButton(std::make_unique<TeensyButton>(PIN_PB_POS, DebounceTime))
+    , negativeButton(std::make_unique<TeensyButton>(PIN_PB_NEG, DebounceTime))
+    , muteButton(std::make_unique<TeensyButton>(PIN_PB_MUTE, DebounceTime))
+    // Leds
+    , redLeds {
+        std::make_unique<PCALed>(pca, PCA9685_LED0, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED1, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED2, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED3, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED4, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED5, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED6, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED7, true)}
+    , blueLeds {
+        std::make_unique<PCALed>(pca, PCA9685_LED8, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED9, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED10, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED11, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED12, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED13, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED14, true),
+        std::make_unique<PCALed>(pca, PCA9685_LED15, true)}
+    , greenLeds {
+        std::make_unique<MCPLed>(mcp, PIN_LED_1_G, true),
+        std::make_unique<MCPLed>(mcp, PIN_LED_2_G, true),
+        std::make_unique<MCPLed>(mcp, PIN_LED_3_G, true),
+        std::make_unique<MCPLed>(mcp, PIN_LED_4_G, true),
+        std::make_unique<MCPLed>(mcp, PIN_LED_5_G, true),
+        std::make_unique<MCPLed>(mcp, PIN_LED_6_G, true),
+        std::make_unique<MCPLed>(mcp, PIN_LED_7_G, true),
+        std::make_unique<MCPLed>(mcp, PIN_LED_8_G, true)}
+    , channelSelectLed(std::make_unique<TeensyLed>(PIN_LED_CS, true))
+    , barSelectLed(std::make_unique<TeensyLed>(PIN_LED_BS, true))
+    // Sliders
+    , slider(std::make_unique<TeensySlider>(A3, 4))
 {
-    beatButtons = {
-        new MCPButton(mcp, PIN_PB_1, DebounceTime),
-        new MCPButton(mcp, PIN_PB_2, DebounceTime),
-        new MCPButton(mcp, PIN_PB_3, DebounceTime),
-        new MCPButton(mcp, PIN_PB_4, DebounceTime),
-        new MCPButton(mcp, PIN_PB_5, DebounceTime),
-        new MCPButton(mcp, PIN_PB_6, DebounceTime),
-        new MCPButton(mcp, PIN_PB_7, DebounceTime),
-        new MCPButton(mcp, PIN_PB_8, DebounceTime)
-    };
+    for (size_t i = 0; i < beatButtons.size(); ++i)
+        _buttons.push_back(*beatButtons[i]);
 
-    channelSelectButton = new TeensyButton(PIN_PB_CS, DebounceTime);
-    barSelectButton = new TeensyButton(PIN_PB_BS, DebounceTime);
-    clearButton = new TeensyButton(PIN_PB_CLR, DebounceTime);
-    positiveButton = new TeensyButton(PIN_PB_POS, DebounceTime);
-    negativeButton = new TeensyButton(PIN_PB_NEG, DebounceTime);
-    muteButton = new TeensyButton(PIN_PB_MUTE, DebounceTime);
+    _buttons.push_back(*channelSelectButton);
+    _buttons.push_back(*barSelectButton);
+    _buttons.push_back(*clearButton);
+    _buttons.push_back(*positiveButton);
+    _buttons.push_back(*negativeButton);
+    _buttons.push_back(*muteButton);
 
-    redLeds = {
-        new PCALed(pca, PCA9685_LED0, true),
-        new PCALed(pca, PCA9685_LED1, true),
-        new PCALed(pca, PCA9685_LED2, true),
-        new PCALed(pca, PCA9685_LED3, true),
-        new PCALed(pca, PCA9685_LED4, true),
-        new PCALed(pca, PCA9685_LED5, true),
-        new PCALed(pca, PCA9685_LED6, true),
-        new PCALed(pca, PCA9685_LED7, true)
-    };
-    
-   blueLeds = {
-        new PCALed(pca, PCA9685_LED8, true),
-        new PCALed(pca, PCA9685_LED9, true),
-        new PCALed(pca, PCA9685_LED10, true),
-        new PCALed(pca, PCA9685_LED11, true),
-        new PCALed(pca, PCA9685_LED12, true),
-        new PCALed(pca, PCA9685_LED13, true),
-        new PCALed(pca, PCA9685_LED14, true),
-        new PCALed(pca, PCA9685_LED15, true)
-    };
-    
-    greenLeds = {
-        new MCPLed(mcp, PIN_LED_1_G, true),
-        new MCPLed(mcp, PIN_LED_2_G, true),
-        new MCPLed(mcp, PIN_LED_3_G, true),
-        new MCPLed(mcp, PIN_LED_4_G, true),
-        new MCPLed(mcp, PIN_LED_5_G, true),
-        new MCPLed(mcp, PIN_LED_6_G, true),
-        new MCPLed(mcp, PIN_LED_7_G, true),
-        new MCPLed(mcp, PIN_LED_8_G, true)
-    };
-    
-    channelSelectLed = new TeensyLed(PIN_LED_CS, true);
-    barSelectLed = new TeensyLed(PIN_LED_BS, true);
+    for (size_t i = 0; i < redLeds.size(); ++i) {
+        _leds.push_back(*redLeds[i]);
+        _leds.push_back(*blueLeds[i]);
+        _leds.push_back(*greenLeds[i]);
+    }
 
-    slider = new TeensySlider(A3, 4);
-}
-
-Peripherals::~Peripherals()
-{
-    for (auto b : beatButtons)
-        delete b;
-
-    delete channelSelectButton;
-    delete barSelectButton;
-    delete clearButton;
-    delete positiveButton;
-    delete negativeButton;
-    delete muteButton;
-
-    for (auto l : redLeds)
-        delete l;
-
-    for (auto l : blueLeds)
-        delete l;
-
-    for (auto l : greenLeds)
-        delete l;
-
-    delete channelSelectLed;
-    delete barSelectLed;
-
-    delete slider;
+    _leds.push_back(*channelSelectLed);
+    _leds.push_back(*barSelectLed);
 }
 
 void Peripherals::init(unsigned long startupDelay)
 {
+    // Initialize leds by type to avoid voltage drop on startup
     pca.setup();
-    for (auto led : redLeds)
+    for (auto& led : redLeds)
         led->init();
 
-    for (auto led : blueLeds)
+    for (auto& led : blueLeds)
         led->init();
 
     delay(startupDelay);
 
     mcp.begin();
-    for (auto led : greenLeds)
+    for (auto& led : greenLeds)
         led->init();
 
     delay(startupDelay);
@@ -126,57 +111,26 @@ void Peripherals::init(unsigned long startupDelay)
     channelSelectLed->init();
     barSelectLed->init();
 
-    for (auto button : beatButtons)
-        button->init();
-
-    channelSelectButton->init();
-    barSelectButton->init();
-    clearButton->init();
-    positiveButton->init();
-    negativeButton->init();
-    muteButton->init();
+    for (auto& button : _buttons)
+        button.get().init();
 
     slider->init();
 }
 
 void Peripherals::updateButtons()
 {
-    channelSelectButton->update();
-    barSelectButton->update();
-    clearButton->update();
-    positiveButton->update();
-    negativeButton->update();
-    muteButton->update();
-    for (auto button : beatButtons)
-        button->update();
+    for (auto& button : _buttons)
+        button.get().update();
 }
 
 void Peripherals::clearLeds() 
 {
-    for (auto &led : redLeds)
-        led->turnOff();
-
-    for (auto &led : blueLeds)
-        led->turnOff();
-
-    for (auto &led : greenLeds)
-        led->turnOff();
-
-    channelSelectLed->turnOff();
-    barSelectLed->turnOff();
+    for (auto &led : _leds)
+        led.get().turnOff();
 }
 
 void Peripherals::updateLeds()
 {
-    for (auto &led : redLeds)
-        led->update();
-
-    for (auto &led : blueLeds)
-        led->update();
-
-    for (auto &led : greenLeds)
-        led->update();
-
-    channelSelectLed->update();
-    barSelectLed->update();
+    for (auto &led : _leds)
+        led.get().update();
 }

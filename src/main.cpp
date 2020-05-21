@@ -291,7 +291,7 @@ void loop()
             ;
         } else if (instrumentSelect) {
             seq->clearInstrument(currentInstrument);
-            for (auto led : p->blueLeds) {
+            for (auto& led : p->blueLeds) {
                 led->turnOn();
                 led->update();
             }
@@ -300,7 +300,7 @@ void loop()
             ;
         } else {
             seq->clearInstruments();
-            for (auto led : p->blueLeds) {
+            for (auto& led : p->blueLeds) {
                 led->turnOn();
                 led->update();
             }

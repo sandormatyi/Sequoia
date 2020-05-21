@@ -14,8 +14,11 @@ public:
     ~Sequencer();
 
     Instrument& getInstrument(uint8_t idx);
-    void clearInstrument(uint8_t idx);
     void clearInstruments();
+
+    uint8_t getCurrentInstrumentIdx() const;
+    void setCurrentInstrument(uint8_t idx);
+    Instrument& getCurrentInstrument();
 
     std::vector<Note> getNotes(uint8_t beatNumber);
 
@@ -26,4 +29,5 @@ public:
 private:
     std::array<Instrument*, s_instrumentNumber> _instruments;
     std::array<bool, s_instrumentNumber> _isMuted;
+    uint8_t _currentInstrument = 0;
 };

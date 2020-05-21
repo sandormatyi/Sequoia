@@ -27,9 +27,19 @@ Instrument& Sequencer::getInstrument(uint8_t idx)
     return *_instruments[idx];
 }
 
-void Sequencer::clearInstrument(uint8_t idx)
+uint8_t Sequencer::getCurrentInstrumentIdx() const
 {
-    _instruments[idx]->clear();
+    return _currentInstrument;
+}
+
+void Sequencer::setCurrentInstrument(uint8_t idx)
+{
+    _currentInstrument = idx;
+}
+
+Instrument& Sequencer::getCurrentInstrument()
+{
+    return *_instruments[_currentInstrument];
 }
 
 void Sequencer::clearInstruments()

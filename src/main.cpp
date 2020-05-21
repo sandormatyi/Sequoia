@@ -39,9 +39,8 @@ int _dummyprintf(const char *, ...)
 Peripherals* p;
 Sequencer* seq;
 
-void printInstrumentInfo(uint8_t idx)
+void printInstrumentInfo(const Instrument& instrument)
 {
-    const auto &instrument = seq->getInstrument(idx);
     p->sld.clearDisplay(0);
     const auto& note = instrument.getDefaultNote();
     const char* name = instrument.getName();
@@ -53,9 +52,8 @@ void printInstrumentInfo(uint8_t idx)
     p->sld.setChar(0, 0, name[3], false);
 }
 
-void printNoteInfo(uint8_t instrumentIdx, uint8_t noteIdx)
+void printNoteInfo(const Note& note)
 {
-    const auto &note = seq->getInstrument(instrumentIdx).getNote(noteIdx);
     p->sld.clearDisplay(0);
     p->sld.setDigit(0, 7, note._noteNumber / 10, false);
     p->sld.setDigit(0, 6, note._noteNumber % 10, false);
@@ -109,9 +107,8 @@ void playStartupAnimation()
     }
 }
 
-void colorActiveNotes(uint8_t instrumentIdx, uint8_t barIdx) 
+void colorActiveNotes(Instrument& instrument, uint8_t barIdx) 
 {
-    const auto &instrument = seq->getInstrument(instrumentIdx);
     // uint8_t minNote = 255;
     // uint8_t maxNote = 0;
     // for (size_t i = 0; i < p->beatButtons.size(); ++i) {
@@ -230,12 +227,11 @@ void setup()
     p->updateButtons();
     p->slider->update();
     playStartupAnimation();
-    printInstrumentInfo(0);
+    printInstrumentInfo(seq->getCurrentInstrument());
 
     DBG("Setup done\n");
 }
 
-uint8_t currentInstrument = 0;
 int editedNote = -1;
 
 void loop()
@@ -259,20 +255,20 @@ void loop()
             DBG("Button %d pressed\n", i);
             if (muteMode) {
                 seq->muteInstrument(i, !seq->isInstrumentMuted(i));
-                currentInstrument = i;
-                printInstrumentInfo(currentInstrument);
+                seq->setCurrentInstrument(i);
+                printInstrumentInfo(seq->getCurrentInstrument());
             } else if (barSelect) {
                 currentBar = i / 4;
             } else if (instrumentSelect) {
-                currentInstrument = i;
-                printInstrumentInfo(currentInstrument);
+                seq->setCurrentInstrument(i);
+                printInstrumentInfo(seq->getCurrentInstrument());
             } else {
                 const auto noteIdx = currentBar * 8 + i;
-                auto &instrument = seq->getInstrument(currentInstrument);
-                seq->getInstrument(currentInstrument).toggleNote(noteIdx);    
+                auto &instrument = seq->getCurrentInstrument();
+                instrument.toggleNote(noteIdx);    
                 if (instrument.isActiveNote(noteIdx)) {
                     editedNote = noteIdx;
-                    printNoteInfo(currentInstrument, noteIdx);
+                    printNoteInfo(seq->getCurrentInstrument().getNote(noteIdx));
                 }
             }
         } else if (p->beatButtons[i]->risingEdge()) {
@@ -282,7 +278,7 @@ void loop()
                 ;
             } else {
                 editedNote = -1;
-                printInstrumentInfo(currentInstrument);
+                printInstrumentInfo(seq->getCurrentInstrument());
             }
         }
     }
@@ -290,7 +286,7 @@ void loop()
         if (barSelect) {
             ;
         } else if (instrumentSelect) {
-            seq->clearInstrument(currentInstrument);
+            seq->getCurrentInstrument().clear();
             for (auto& led : p->blueLeds) {
                 led->turnOn();
                 led->update();
@@ -312,22 +308,24 @@ void loop()
         if (barSelect) {
             ;
         } else if (instrumentSelect) {
-            Note note = seq->getInstrument(currentInstrument).getDefaultNote();
+            auto &instrument = seq->getCurrentInstrument();
+            Note note = instrument.getDefaultNote();
             note._noteNumber += increment;
-            seq->getInstrument(currentInstrument).setDefaultNote(note);
-            printInstrumentInfo(currentInstrument);
+            instrument.setDefaultNote(note);
+            printInstrumentInfo(instrument);
         } else if (editedNote > -1) {
-            Note note = seq->getInstrument(currentInstrument).getNote(editedNote);
+            auto &instrument = seq->getCurrentInstrument();
+            Note note = instrument.getNote(editedNote);
             note._noteNumber += increment;
-            seq->getInstrument(currentInstrument).setNote(editedNote, note);
-            printNoteInfo(currentInstrument, editedNote);
+            instrument.setNote(editedNote, note);
+            printNoteInfo(note);
         }
     }
     if (mutePressed) {
         if (barSelect) {
             ;
         } else if (instrumentSelect) {
-            seq->muteInstrument(currentInstrument, true);
+            seq->muteInstrument(seq->getCurrentInstrumentIdx(), true);
         } else if (editedNote > -1) {
             ;
         } else {
@@ -342,15 +340,17 @@ void loop()
         if (barSelect) {
             ;
         } else if (instrumentSelect) {
-            Note note = seq->getInstrument(currentInstrument).getDefaultNote();
+            auto &instrument = seq->getCurrentInstrument();
+            Note note = instrument.getDefaultNote();
             note._velocity = min(32 * newValue, 127);
-            seq->getInstrument(currentInstrument).setDefaultNote(note);
-            printInstrumentInfo(currentInstrument);
+            instrument.setDefaultNote(note);
+            printInstrumentInfo(instrument);
         } else if (editedNote > -1) {
-            Note note = seq->getInstrument(currentInstrument).getNote(editedNote);
+            auto &instrument = seq->getCurrentInstrument();
+            Note note = instrument.getNote(editedNote);
             note._velocity = min(32 * newValue, 127);
-            seq->getInstrument(currentInstrument).setNote(editedNote, note);
-            printNoteInfo(currentInstrument, editedNote);
+            instrument.setNote(editedNote, note);
+            printNoteInfo(note);
         }
     }
 
@@ -370,9 +370,9 @@ void loop()
             }
         }
     } else if (instrumentSelect) {
-        p->blueLeds[currentInstrument]->turnOn();
+        p->blueLeds[seq->getCurrentInstrumentIdx()]->turnOn();
     } else {
-        colorActiveNotes(currentInstrument, currentBar);
+        colorActiveNotes(seq->getCurrentInstrument(), currentBar);
         const auto currentBeatLed = (currentBeat + Instrument::s_beatNumber - 1) % Instrument::s_beatNumber - currentBar * 8;
         for (size_t i = 0; i < p->beatButtons.size(); ++i) {
             if (isPlaying && (currentBeatLed >= 0 && currentBeatLed < 8)) {

@@ -240,6 +240,8 @@ int editedNote = -1;
 
 void loop()
 {
+    usbMIDI.read();
+
     const auto sliderUpdated = p->slider->update();
     p->updateButtons();
 
@@ -379,12 +381,10 @@ void loop()
         p->channelSelectLed->turnOn();
     } else {
         if (isPlaying) {
-            if ((currentBeat % 4) > 1) {
+            if ((currentBeat + Instrument::s_beatNumber - 1) % 4 < 2) {
                 p->barSelectLed->turnOn();
             }
         }
     }
     p->updateLeds();
-
-    usbMIDI.read();
 }

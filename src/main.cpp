@@ -359,7 +359,7 @@ void loop()
     // Update beat LEDs
     if (muteMode) {
         for (size_t i = 0; i < p->beatButtons.size(); ++i) {
-            if (!seq->isInstrumentMuted(i)) {
+            if (seq->isInstrumentMuted(i)) {
                 p->greenLeds[i]->turnOn();
             }
         }

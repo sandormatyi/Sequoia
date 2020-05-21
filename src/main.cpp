@@ -252,11 +252,16 @@ void loop()
     const bool negativePressed = p->negativeButton->fallingEdge();
     const bool mutePressed = p->muteButton->fallingEdge();
     const bool muteReleased = p->muteButton->risingEdge();
+    const bool muteMode = p->muteButton->read() == LOW;
 
     for (size_t i = 0; i < p->beatButtons.size(); ++i) {
         if (p->beatButtons[i]->fallingEdge()) {
             DBG("Button %d pressed\n", i);
-            if (barSelect) {
+            if (muteMode) {
+                seq->muteInstrument(i, !seq->isInstrumentMuted(i));
+                currentInstrument = i;
+                printInstrumentInfo(currentInstrument);
+            } else if (barSelect) {
                 currentBar = i / 4;
             } else if (instrumentSelect) {
                 currentInstrument = i;
@@ -349,11 +354,16 @@ void loop()
         }
     }
 
-
     p->clearLeds();
 
     // Update beat LEDs
-    if (barSelect) {
+    if (muteMode) {
+        for (size_t i = 0; i < p->beatButtons.size(); ++i) {
+            if (!seq->isInstrumentMuted(i)) {
+                p->greenLeds[i]->turnOn();
+            }
+        }
+    } else if (barSelect) {
         for (size_t i = 0; i < p->beatButtons.size(); ++i) {
             if (i / 4 == currentBar) {
                 p->redLeds[i]->turnOn();

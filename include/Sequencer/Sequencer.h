@@ -19,6 +19,7 @@ public:
 
     std::vector<Note> getNotes(uint8_t beatNumber);
 
+    bool isInstrumentMuted(uint8_t idx) const;
     void muteInstrument(uint8_t idx, bool isMuted);
     void muteAllInstruments(bool isMuted);
 

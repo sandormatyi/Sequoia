@@ -51,6 +51,11 @@ std::vector<Note> Sequencer::getNotes(uint8_t beatNumber)
     return result;
 }
 
+bool Sequencer::isInstrumentMuted(uint8_t idx) const
+{
+    return _isMuted[idx];
+}
+
 void Sequencer::muteInstrument(uint8_t idx, bool isMuted)
 {
     _isMuted[idx] = isMuted;

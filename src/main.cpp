@@ -1,6 +1,7 @@
 #include <array>
 #include <Arduino.h>
 #include <MIDI.h>
+#include <midi_UsbTransport.h>
 #include <Adafruit_MCP23017.h>
 #include <PCA9685.h>
 #include <LedControl.h>
@@ -10,20 +11,6 @@
 #include "Sequencer/Instrument.h"
 #include "Sequencer/Sequencer.h"
 #include "Hardware/Slider/TeensySlider.h"
-
-#if defined(USBCON)
-#include <midi_UsbTransport.h>
-
-static const unsigned sUsbTransportBufferSize = 16;
-typedef midi::UsbTransport<sUsbTransportBufferSize> UsbTransport;
-
-UsbTransport sUsbTransport;
-
-MIDI_CREATE_INSTANCE(UsbTransport, sUsbTransport, MIDI);
-
-#else // No USB available, fallback to Serial
-MIDI_CREATE_DEFAULT_INSTANCE();
-#endif
 
 #define _ENABLE_SERIAL 0
 #if _ENABLE_SERIAL == 1
@@ -151,11 +138,18 @@ uint16_t bpm = 120;
 
 void playBeat(uint8_t beatNumber)
 {
+    static std::vector<Note> previousNotes;
+    for (const auto& note: previousNotes) {
+        usbMIDI.sendNoteOff(note._noteNumber, note._velocity, note._channel);
+    }
+
+    previousNotes.clear();
+
     DBG("Beat %d\n", beatNumber);
     for (const auto& note : seq->getNotes(beatNumber)) {
         DBG("\t%d sent\n", note._noteNumber);
+        previousNotes.push_back(note);
         usbMIDI.sendNoteOn(note._noteNumber, note._velocity, note._channel);
-        usbMIDI.sendNoteOff(note._noteNumber, note._velocity, note._channel);
     }
 }
 
@@ -203,7 +197,7 @@ void setup()
 {
 #if _ENABLE_SERIAL == 1
     Serial.begin(115200);
-    while (!Serial) ;
+    while (!Serial && millis() < 1000) ;
 #endif
     DBG("Setup started\n");
 
@@ -216,7 +210,6 @@ void setup()
     DBG("Peripherals initialized\n");
 
     usbMIDI.setHandleRealTimeSystem(midiRealtimeCallback);
-    MIDI.begin();
     DBG("MIDI handling initialized\n");
 
     seq = new Sequencer();

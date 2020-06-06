@@ -10,6 +10,7 @@
 #include "Hardware/Peripherals.h"
 #include "Sequencer/Instrument.h"
 #include "Sequencer/Sequencer.h"
+#include "Sequencer/PlayHead.h"
 #include "Hardware/Slider/TeensySlider.h"
 #include "DBG.h"
 #include <glob.h>
@@ -17,6 +18,7 @@
 
 Peripherals* p;
 Sequencer* seq;
+PlayHead* playHead;
 
 std::array<bool, 16> buttonStates;
 
@@ -118,40 +120,14 @@ static void colorActiveNotes(Instrument& instrument, uint8_t barIdx)
     }
 }
 
-volatile uint8_t currentStep = 0;
 uint8_t currentBar = 0;
 uint16_t bpm = 120;
-
-static void playStep(uint8_t stepNumber)
-{
-    // static std::vector<Note> previousNotes;
-    // for (const auto& note: previousNotes) {
-    //     usbMIDI.sendNoteOff(note._noteNumber, note._velocity, note._channel);
-    // }
-
-    // previousNotes.clear();
-
-    DBG("Step %d\n", stepNumber);
-    for (const auto& note : seq->getNotes(stepNumber)) {
-        DBG("\t%d sent\n", note._noteNumber);
-        // previousNotes.push_back(note);
-        usbMIDI.sendNoteOn(note._noteNumber, note._velocity, note._channel);
-        usbMIDI.sendNoteOff(note._noteNumber, note._velocity, note._channel);
-    }
-}
-
-static void playNextStep()
-{
-    playStep(currentStep);
-    currentStep = (currentStep + 1) % Instrument::s_stepNumber;
-}
 
 byte CLOCK = 248;
 byte START = 250;
 byte CONTINUE = 251;
 byte STOP = 252;
 volatile uint8_t clockCounter = 0;
-volatile bool isPlaying = false;
 
 void midiRealtimeCallback(uint8_t msg)
 {
@@ -159,22 +135,17 @@ void midiRealtimeCallback(uint8_t msg)
     if (msg == CLOCK) {
         clockCounter++;
         if (clockCounter % 6 == 0)
-            playNextStep();
-
-        clockCounter = clockCounter % 24;
+            playHead->step();
+            clockCounter = clockCounter % 24;
     }
 
     if (msg == START || msg == CONTINUE) {
-        isPlaying = true;
         clockCounter = 0;
-        currentStep = 0;
-        playNextStep();
+        playHead->start(msg == START);
     }
 
     if (msg == STOP) {
-        isPlaying = false;
-        currentStep = 0;
-        usbMIDI.sendControlChange(123,0,0); // All notes off
+        playHead->stop();
     }
 }
 
@@ -207,6 +178,7 @@ void setup()
     DBG("MIDI handling initialized\n");
 
     seq = new Sequencer();
+    playHead = new PlayHead(*seq);
     DBG("Sequencer initialized, free RAM: %d\n", FreeRam());
 
     p->clearLeds();
@@ -386,15 +358,15 @@ void loop()
 
     // Update step LEDs
     colorActiveNotes(seq->getCurrentInstrument(), currentBar);
-    const auto currentStepLed = (currentStep + Instrument::s_stepNumber - 1) % Instrument::s_stepNumber - currentBar * 8;
-    if (isPlaying && (currentStepLed >= 0 && currentStepLed < 16)) {
+    const auto currentStepLed = playHead->getCurrentStep() - currentBar * 8;
+    if (playHead->isPlaying() && (currentStepLed >= 0 && currentStepLed < 16)) {
         p->greenLeds[currentStepLed].turnOn();
     }
 
 
     // Update status LEDs
-    if (isPlaying) {
-        if ((currentStep + Instrument::s_stepNumber - 1) % 4 < 2) {
+    if (playHead->isPlaying()) {
+        if (playHead->getCurrentStep() % 4 < 2) {
             p->yellowLed.turnOn();
         }
     }

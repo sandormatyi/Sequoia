@@ -118,11 +118,11 @@ static void colorActiveNotes(Instrument& instrument, uint8_t barIdx)
     }
 }
 
-volatile uint8_t currentBeat = 0;
+volatile uint8_t currentStep = 0;
 uint8_t currentBar = 0;
 uint16_t bpm = 120;
 
-static void playBeat(uint8_t beatNumber)
+static void playStep(uint8_t stepNumber)
 {
     // static std::vector<Note> previousNotes;
     // for (const auto& note: previousNotes) {
@@ -131,8 +131,8 @@ static void playBeat(uint8_t beatNumber)
 
     // previousNotes.clear();
 
-    DBG("Beat %d\n", beatNumber);
-    for (const auto& note : seq->getNotes(beatNumber)) {
+    DBG("Step %d\n", stepNumber);
+    for (const auto& note : seq->getNotes(stepNumber)) {
         DBG("\t%d sent\n", note._noteNumber);
         // previousNotes.push_back(note);
         usbMIDI.sendNoteOn(note._noteNumber, note._velocity, note._channel);
@@ -140,10 +140,10 @@ static void playBeat(uint8_t beatNumber)
     }
 }
 
-static void playNextBeat()
+static void playNextStep()
 {
-    playBeat(currentBeat);
-    currentBeat = (currentBeat + 1) % Instrument::s_beatNumber;
+    playStep(currentStep);
+    currentStep = (currentStep + 1) % Instrument::s_stepNumber;
 }
 
 byte CLOCK = 248;
@@ -159,7 +159,7 @@ void midiRealtimeCallback(uint8_t msg)
     if (msg == CLOCK) {
         clockCounter++;
         if (clockCounter % 6 == 0)
-            playNextBeat();
+            playNextStep();
 
         clockCounter = clockCounter % 24;
     }
@@ -167,13 +167,13 @@ void midiRealtimeCallback(uint8_t msg)
     if (msg == START || msg == CONTINUE) {
         isPlaying = true;
         clockCounter = 0;
-        currentBeat = 0;
-        playNextBeat();
+        currentStep = 0;
+        playNextStep();
     }
 
     if (msg == STOP) {
         isPlaying = false;
-        currentBeat = 0;
+        currentStep = 0;
         usbMIDI.sendControlChange(123,0,0); // All notes off
     }
 }
@@ -386,15 +386,15 @@ void loop()
 
     // Update step LEDs
     colorActiveNotes(seq->getCurrentInstrument(), currentBar);
-    const auto currentBeatLed = (currentBeat + Instrument::s_beatNumber - 1) % Instrument::s_beatNumber - currentBar * 8;
-    if (isPlaying && (currentBeatLed >= 0 && currentBeatLed < 16)) {
-        p->greenLeds[currentBeatLed].turnOn();
+    const auto currentStepLed = (currentStep + Instrument::s_stepNumber - 1) % Instrument::s_stepNumber - currentBar * 8;
+    if (isPlaying && (currentStepLed >= 0 && currentStepLed < 16)) {
+        p->greenLeds[currentStepLed].turnOn();
     }
 
 
     // Update status LEDs
     if (isPlaying) {
-        if ((currentBeat + Instrument::s_beatNumber - 1) % 4 < 2) {
+        if ((currentStep + Instrument::s_stepNumber - 1) % 4 < 2) {
             p->yellowLed.turnOn();
         }
     }

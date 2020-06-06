@@ -24,7 +24,7 @@ const Note &Instrument::getDefaultNote() const
 void Instrument::setDefaultNote(Note defaultNote)
 {
     _defaultNote = defaultNote;
-    for (uint8_t i = 0; i < s_beatNumber; ++i) {
+    for (uint8_t i = 0; i < s_stepNumber; ++i) {
         if (!isActiveNote(i)) {
             setNote(i, defaultNote);
         }
@@ -53,7 +53,7 @@ void Instrument::toggleNote(uint8_t idx)
 
 void Instrument::clear()
 {
-    for (uint8_t i = 0; i < s_beatNumber; ++i) {
+    for (uint8_t i = 0; i < s_stepNumber; ++i) {
         _notes[i] = _defaultNote;
         _activeNotes[i] = false;
     }

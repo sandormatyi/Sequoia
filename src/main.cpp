@@ -15,6 +15,12 @@
 #include "DBG.h"
 #include <glob.h>
 
+enum class SyncMode
+{
+    Midi = 0,
+    Internal = 1
+};
+SyncMode syncMode = SyncMode::Internal;
 
 Peripherals* p;
 Sequencer* seq;
@@ -46,9 +52,22 @@ void printNoteInfo(const Note& note)
     p->sld.setChar(0, 0, note._velocity % 10, false);
 }
 
+void printBpmInfo(const double bpm) 
+{
+    p->sld.clearDisplay(0);
+    p->sld.setChar(0, 7, 'B', false);
+    p->sld.setChar(0, 6, 'P', false);
+    p->sld.setChar(0, 5, 'M', false);
+
+    const auto intBpm = uint32_t(bpm);
+    p->sld.setDigit(0, 2, intBpm / 100, false);
+    p->sld.setDigit(0, 1, (intBpm % 100) / 10, false);
+    p->sld.setDigit(0, 0, intBpm % 10, false);
+}
+
 void playStartupAnimation()
 {
-    constexpr unsigned long animationDelay = 200;
+    constexpr unsigned long animationDelay = 100;
 
     for (uint8_t i = 0; i < 16; i++) {
         p->redLeds[i].turnOn();
@@ -121,16 +140,16 @@ static void colorActiveNotes(Instrument& instrument, uint8_t barIdx)
 }
 
 uint8_t currentBar = 0;
-uint16_t bpm = 120;
-
-byte CLOCK = 248;
-byte START = 250;
-byte CONTINUE = 251;
-byte STOP = 252;
-volatile uint8_t clockCounter = 0;
 
 void midiRealtimeCallback(uint8_t msg)
 {
+    constexpr byte CLOCK = 248;
+    constexpr byte START = 250;
+    constexpr byte CONTINUE = 251;
+    constexpr byte STOP = 252;
+
+    static uint8_t clockCounter = 0;
+
     //DBG("Midi RT message: %x\n", msg);
     if (msg == CLOCK) {
         clockCounter++;
@@ -149,7 +168,13 @@ void midiRealtimeCallback(uint8_t msg)
     }
 }
 
-//IntervalTimer timer;
+IntervalTimer internalMetronome;
+double bpm = 120.0;
+
+void timerCallback()
+{
+    playHead->step();
+}
 
 void setup()
 {
@@ -184,8 +209,8 @@ void setup()
     p->clearLeds();
     p->updateLeds();
     p->updateButtons();
+    p->blackSlider.update();
     p->redSlider.update();
-    p->yellowSlider.update();
     playStartupAnimation();
     printInstrumentInfo(seq->getCurrentInstrument());
 
@@ -199,13 +224,12 @@ void loop()
     usbMIDI.read();
 
     // const auto sliderUpdated = p->slider->update();
-    const auto yellowSliderUpdated = p->yellowSlider.update();
     const auto redSliderUpdated = p->redSlider.update();
-    p->updateButtons();
+    const auto blackSliderUpdated = p->blackSlider.update();    
 
     const bool clearPressed = p->yellowButton.read() == LOW;
-    const bool positivePressed = p->redButton.fallingEdge();
-    const bool negativePressed = p->blueButton.fallingEdge();
+    const bool redButtonPressed = p->redButton.fallingEdge();
+    const bool blueButtonPressed = p->blueButton.fallingEdge();
     const bool mutePressed = p->greenButton.fallingEdge();
     const bool muteReleased = p->greenButton.risingEdge();
     const bool muteMode = p->greenButton.read() == LOW;
@@ -216,7 +240,7 @@ void loop()
 
     // const bool clearPressed = false;
     // const bool positivePressed = false;
-    // const bool negativePressed = false;
+    // const bool blueButtonPressed = false;
     // const bool mutePressed = false;
     // const bool muteReleased = false;
     // const bool muteMode = false;
@@ -268,8 +292,8 @@ void loop()
         }
         return;
     }
-    if (positivePressed || negativePressed) {
-        const auto increment = positivePressed ? 1 : -1;
+    if (redButtonPressed || blueButtonPressed) {
+        const auto increment = redButtonPressed ? 1 : -1;
         if (instrumentEditMode) {
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
@@ -282,8 +306,28 @@ void loop()
             note._noteNumber += increment;
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
+        } else {
+            if (blueButtonPressed) {
+                if (playHead->isPlaying()) {
+                    playHead->stop();
+                    internalMetronome.end();
+                    syncMode = SyncMode::Midi;
+                    usbMIDI.setHandleRealTimeSystem(midiRealtimeCallback);
+                    playHead->stop();
+                } else {
+                    syncMode = SyncMode::Internal;
+                    usbMIDI.setHandleRealTimeSystem(nullptr);
+                    playHead->start();
+                    const auto microsecondsPerStep = 1'000'000.0 / (bpm / 60.0 * 4.0);
+                    internalMetronome.begin(timerCallback, microsecondsPerStep);
+                }
+            }
         }
     }
+    if (p->blueButton.risingEdge()) {
+        printInstrumentInfo(seq->getCurrentInstrument());
+    }
+
     if (mutePressed) {
         if (instrumentEditMode) {
             seq->muteInstrument(seq->getCurrentInstrumentIdx(), true);
@@ -296,49 +340,68 @@ void loop()
     if (muteReleased) {
         seq->muteAllInstruments(false);
     }
-    if (redSliderUpdated) {
+    if (blackSliderUpdated) {
         if (instrumentEditMode) {
-            const auto newPitch = round(p->redSlider.readNormalizedRawValue() * 24);
+            const auto newPitch = round(p->blackSlider.readNormalizedRawValue() * 24);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
             note._noteNumber = 36u + newPitch;
             instrument.setDefaultNote(note);
             printNoteInfo(note);
         } else if (editedNote > -1) {
-            const auto newPitch = round(p->redSlider.readNormalizedRawValue() * 24) - 12;
+            const auto newPitch = round(p->blackSlider.readNormalizedRawValue() * 24) - 12;
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getNote(editedNote);
             note._noteNumber = instrument.getDefaultNote()._noteNumber + newPitch;
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
+        } else if (syncMode == SyncMode::Internal && p->blueButton.read() == LOW) {
+            const auto value = p->blackSlider.readNormalizedRawValue() * 2.0;
+            bpm = 60.0 * pow(2.0, value);
+            DBG("BPM is %d\n", (int)bpm);
+            const auto microsecondsPerStep = 1'000'000.0 / (bpm / 60.0 * 4.0);
+            internalMetronome.update(microsecondsPerStep);
+            printBpmInfo(bpm);
         } else {
-            const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
+            const auto value = round(p->blackSlider.readNormalizedRawValue() * 127);
             const auto &instrument = seq->getCurrentInstrument();
             const auto channel = instrument.getDefaultNote()._channel;
-            const auto cc = instrument.getCC(0);
+            const auto cc = instrument.getCC(1);
+            DBG("CC %d: %d\n", cc, value);
             usbMIDI.sendControlChange(cc, value, channel);
         }
     }
-    if (yellowSliderUpdated) {
+    if (redSliderUpdated) {
         if (instrumentEditMode) {
-            const auto newValue = round(p->yellowSlider.readNormalizedRawValue() * 127);
+            const auto newValue = round(p->redSlider.readNormalizedRawValue() * 127);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
             note._velocity = newValue;
             instrument.setDefaultNote(note);
             printNoteInfo(note);
         } else if (editedNote > -1) {
-            const auto newValue = round(p->yellowSlider.readNormalizedRawValue() * 127);
+            const auto newValue = round(p->redSlider.readNormalizedRawValue() * 127);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getNote(editedNote);
             note._velocity = newValue;
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
         } else {
-            const auto value = round(p->yellowSlider.readNormalizedRawValue() * 127);
+            const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
             const auto &instrument = seq->getCurrentInstrument();
             const auto channel = instrument.getDefaultNote()._channel;
-            const auto cc = instrument.getCC(1);
+            const auto cc = instrument.getCC(2);
+            DBG("CC %d: %d\n", cc, value);
+            usbMIDI.sendControlChange(cc, value, channel);
+        }
+    }
+    for (size_t i = 0; i < p->instrumentSliders.size(); ++i) {
+        if (p->instrumentSliders[i].update()) {
+            const auto value = round(p->instrumentSliders[i].readNormalizedRawValue() * 127);
+            const auto &instrument = seq->getInstrument(i);
+            const auto channel = instrument.getDefaultNote()._channel;
+            const auto cc = instrument.getCC(0);
+            DBG("CC %d: %d\n", cc, value);
             usbMIDI.sendControlChange(cc, value, channel);
         }
     }
@@ -367,7 +430,7 @@ void loop()
     // Update status LEDs
     if (playHead->isPlaying()) {
         if (playHead->getCurrentStep() % 4 < 2) {
-            p->yellowLed.turnOn();
+            p->blueLed.turnOn();
         }
     }
     p->updateLeds();

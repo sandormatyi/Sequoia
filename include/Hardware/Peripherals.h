@@ -42,6 +42,8 @@ struct Peripherals
     MCPLed blueLed;
     MCPLed greenLed;
 
+    std::array<TeensySlider, 4> instrumentSliders;
+
+    TeensySlider blackSlider;
     TeensySlider redSlider;
-    TeensySlider yellowSlider;
 };

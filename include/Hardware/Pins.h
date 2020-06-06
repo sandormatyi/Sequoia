@@ -1,12 +1,17 @@
 #pragma once
 
-enum Teensy_Pins {
+enum Teensy_Pins
+{
   PIN_SLD_DIN = 10,
   PIN_SLD_CLK = 11,
   PIN_SLD_CS = 12,
 
-  PIN_POT_RED = 23,
-  PIN_POT_YELLOW = 22
+  PIN_POT_BLACK = 23,
+  PIN_POT_RED = 22,
+  PIN_POT_INST_1 = 16,
+  PIN_POT_INST_2 = 17,
+  PIN_POT_INST_3 = 20,
+  PIN_POT_INST_4 = 21 
 };
 
 enum MCP_1_Pins {

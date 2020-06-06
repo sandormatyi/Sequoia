@@ -8,8 +8,9 @@ class Instrument
 {
 public:
     static constexpr uint8_t s_stepNumber = 16;
+    static constexpr uint8_t s_ccNumber = 3;
 
-    Instrument(const char *name, Note defaultNote, std::array<uint8_t, 2> cc);
+    Instrument(const char *name, Note defaultNote, std::array<uint8_t, s_ccNumber> cc);
 
     const char* getName() const;
     const Note &getDefaultNote() const;
@@ -28,7 +29,7 @@ public:
 private:
     char _name[5];
     Note _defaultNote;
-    std::array<uint8_t, 2> _cc;
+    std::array<uint8_t, s_ccNumber> _cc;
     std::array<Note, s_stepNumber> _notes;
     std::array<bool, s_stepNumber> _activeNotes;
 };

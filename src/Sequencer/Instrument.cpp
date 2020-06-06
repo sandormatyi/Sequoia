@@ -1,7 +1,7 @@
 #include "Sequencer/Instrument.h"
 #include <cstring>
 
-Instrument::Instrument(const char *name, Note defaultNote, std::array<uint8_t, 2> cc)
+Instrument::Instrument(const char *name, Note defaultNote, std::array<uint8_t, s_ccNumber> cc)
     : _defaultNote(defaultNote)
     , _notes()
     , _activeNotes()

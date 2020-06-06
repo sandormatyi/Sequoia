@@ -20,7 +20,7 @@ public:
     void setCurrentInstrument(uint8_t idx);
     Instrument& getCurrentInstrument();
 
-    std::vector<Note> getNotes(uint8_t beatNumber);
+    std::vector<Note> getNotes(uint8_t stepIdx);
 
     bool isInstrumentMuted(uint8_t idx) const;
     void muteInstrument(uint8_t idx, bool isMuted);

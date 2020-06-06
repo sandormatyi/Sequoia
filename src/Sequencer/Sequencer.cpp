@@ -48,15 +48,15 @@ void Sequencer::clearInstruments()
         instrument.clear();
 }
 
-std::vector<Note> Sequencer::getNotes(uint8_t beatNumber)
+std::vector<Note> Sequencer::getNotes(uint8_t stepIdx)
 {
     std::vector<Note> result;
     for (size_t i = 0; i < _instruments.size(); ++i) {
         if (_isMuted[i])
             continue;
 
-        if (_instruments[i].isActiveNote(beatNumber))
-            result.push_back(_instruments[i].getNote(beatNumber));
+        if (_instruments[i].isActiveNote(stepIdx))
+            result.push_back(_instruments[i].getNote(stepIdx));
     }
     return result;
 }

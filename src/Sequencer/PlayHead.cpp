@@ -14,12 +14,15 @@ void PlayHead::start(bool fromBeginning = true)
     _isPlaying = true;
     if (fromBeginning)
         _nextStep = 0;
+
+    step();
 }
 
 void PlayHead::stop()
 {
     _isPlaying = false;
     usbMIDI.sendControlChange(123, 0, 0); // All notes off
+    _nextStep = 0;
 }
 
 void PlayHead::step()

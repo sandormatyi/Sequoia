@@ -1,30 +1,28 @@
 #include "Sequencer/Sequencer.h"
+#include "DBG.h"
 
 Sequencer::Sequencer()
+    : _instruments {
+        Instrument("Kick", Note(36, 127, 10), {20, 21}),
+        Instrument("Snr ", Note(38, 127, 10), {22, 23}),
+        Instrument("Hat ", Note(42, 127, 10), {24, 25}),
+        // Instrument("OHat", Note(46, 127, 10)),
+        // Instrument("LTom", Note(47, 127, 10)),
+        // Instrument("HTom", Note(48, 127, 10)),
+        // Instrument("Clap", Note(39, 127, 10)),
+        Instrument("ACID", Note(36, 127, 1), {26, 27})
+    }
 {
-    _instruments = {
-        new Instrument("Kick", Note(36, 127, 10)),
-        new Instrument("Snr ", Note(38, 127, 10)),
-        new Instrument("CHat", Note(42, 127, 10)),
-        new Instrument("OHat", Note(46, 127, 10)),
-        new Instrument("LTom", Note(47, 127, 10)),
-        new Instrument("HTom", Note(48, 127, 10)),
-        new Instrument("Clap", Note(39, 127, 10)),
-        new Instrument("ACID", Note(36, 127, 1))
-    };
-
     muteAllInstruments(false);
 }
 
 Sequencer::~Sequencer()
 {
-    for (auto i : _instruments)
-        delete i;
 }
 
 Instrument& Sequencer::getInstrument(uint8_t idx)
 {
-    return *_instruments[idx];
+    return _instruments[idx];
 }
 
 uint8_t Sequencer::getCurrentInstrumentIdx() const
@@ -34,18 +32,20 @@ uint8_t Sequencer::getCurrentInstrumentIdx() const
 
 void Sequencer::setCurrentInstrument(uint8_t idx)
 {
+    DBG("SEQ: Current instrument changed from %u to %u\n", _currentInstrument, idx);
     _currentInstrument = idx;
 }
 
 Instrument& Sequencer::getCurrentInstrument()
 {
-    return *_instruments[_currentInstrument];
+    return _instruments[_currentInstrument];
 }
 
 void Sequencer::clearInstruments()
 {
-    for (auto instrument : _instruments)
-        instrument->clear();
+    DBG("SEQ: Instruments cleared\n");
+    for (auto& instrument : _instruments)
+        instrument.clear();
 }
 
 std::vector<Note> Sequencer::getNotes(uint8_t beatNumber)
@@ -55,8 +55,8 @@ std::vector<Note> Sequencer::getNotes(uint8_t beatNumber)
         if (_isMuted[i])
             continue;
 
-        if (_instruments[i]->isActiveNote(beatNumber))
-            result.push_back(_instruments[i]->getNote(beatNumber));
+        if (_instruments[i].isActiveNote(beatNumber))
+            result.push_back(_instruments[i].getNote(beatNumber));
     }
     return result;
 }
@@ -68,6 +68,7 @@ bool Sequencer::isInstrumentMuted(uint8_t idx) const
 
 void Sequencer::muteInstrument(uint8_t idx, bool isMuted)
 {
+    DBG("SEQ: Instrument %d mute state set to %d\n", idx, isMuted);
     _isMuted[idx] = isMuted;
 }
 

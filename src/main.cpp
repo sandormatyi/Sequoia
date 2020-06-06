@@ -11,20 +11,14 @@
 #include "Sequencer/Instrument.h"
 #include "Sequencer/Sequencer.h"
 #include "Hardware/Slider/TeensySlider.h"
+#include "DBG.h"
+#include <glob.h>
 
-#define _ENABLE_SERIAL 0
-#if _ENABLE_SERIAL == 1
-#define DBG Serial.printf
-#else
-int _dummyprintf(const char *, ...)
-{
-    return 0;
-}
-#define DBG _dummyprintf
-#endif
 
 Peripherals* p;
 Sequencer* seq;
+
+std::array<bool, 16> buttonStates;
 
 void printInstrumentInfo(const Instrument& instrument)
 {
@@ -52,53 +46,45 @@ void printNoteInfo(const Note& note)
 
 void playStartupAnimation()
 {
-    constexpr unsigned long animationDelay = 100;
+    constexpr unsigned long animationDelay = 200;
 
-    for (uint8_t i = 0; i < 8; i++) {
-        p->redLeds[i]->turnOn();
-        p->redLeds[i]->update();
-        p->sld.setDigit(0, i, i, false);
-        delay(animationDelay);
-    }
+    for (uint8_t i = 0; i < 16; i++) {
+        p->redLeds[i].turnOn();
+        p->redLeds[i].update();
+        p->greenLeds[15 - i].turnOn();
+        p->greenLeds[15 - i].update();
+        p->sld.setDigit(0, i / 2, i / 2, false);
 
-    p->channelSelectLed->turnOn();
-    delay(animationDelay);
-    p->barSelectLed->turnOn();
-    delay(animationDelay);
-
-    for (uint8_t i = 0; i < 8; i++) {
-        p->blueLeds[7 - i]->turnOn();
-        p->blueLeds[7 - i]->update();
-        p->sld.setDigit(0, 7 - i, 8 + i, false);
-        delay(animationDelay);
-    }
-
-    for (uint8_t i = 0; i < 8; ++i) {
-        p->greenLeds[i]->turnOn();
-        p->greenLeds[i]->update();
-        p->sld.setChar(0, i, ' ', false);
-        delay(animationDelay);
-    }
-
-    for (uint8_t fade = 0; fade < 10; ++fade) {
-        const auto fadePercent = 100 - fade * 10;
-        for (uint8_t i = 0; i < 8; ++i) {
-            p->greenLeds[i]->turnOff();
-            p->greenLeds[i]->update();
-            p->redLeds[i]->setPWMValue(fadePercent);
-            p->redLeds[i]->update();
-            p->blueLeds[i]->setPWMValue(fadePercent);
-            p->blueLeds[i]->update();
+        p->instrumentLeds[i / 4].turnOn();
+        p->instrumentLeds[i / 4].update();
+        switch(i / 4) {
+            case 0:
+                p->yellowLed.turnOn();
+                p->yellowLed.update();
+                break;
+            case 1:
+                p->redLed.turnOn();
+                p->redLed.update();
+                break;
+            case 2:
+                p->blueLed.turnOn();
+                p->blueLed.update();
+                break;
+            case 3:
+                p->greenLed.turnOn();
+                p->greenLed.update();
+                break;
         }
+
         delay(animationDelay);
     }
 }
 
-void colorActiveNotes(Instrument& instrument, uint8_t barIdx) 
+static void colorActiveNotes(Instrument& instrument, uint8_t barIdx) 
 {
     // uint8_t minNote = 255;
     // uint8_t maxNote = 0;
-    // for (size_t i = 0; i < p->beatButtons.size(); ++i) {
+    // for (size_t i = 0; i < p->stepButtons.size(); ++i) {
     //     const auto idx = i + (barIdx * 8);
     //     if (instrument.isActiveNote(idx)) {
     //         const auto &note = instrument.getNote(idx);
@@ -115,8 +101,8 @@ void colorActiveNotes(Instrument& instrument, uint8_t barIdx)
     const auto maxNote = defaultNote._noteNumber + range;
     const auto minNote = defaultNote._noteNumber - range;
 
-    for (size_t i = 0; i < p->beatButtons.size(); ++i) {
-        const auto idx = i + (barIdx * 8);
+    for (size_t i = 0; i < p->stepButtons.size(); ++i) {
+        const auto idx = i + (barIdx * 16);
         if (instrument.isActiveNote(idx)) {
             const auto &note = instrument.getNote(idx);
             const auto diffFromMax = (note._noteNumber > maxNote) ? 0 : 
@@ -126,8 +112,8 @@ void colorActiveNotes(Instrument& instrument, uint8_t barIdx)
             const auto normalizedDiff = float(diffFromMax) / float(range * 2);
             const auto normalizedVelocity = float(note._velocity) / 127.0f;
 
-            p->redLeds[i]->setPWMValue(uint8_t(100.0f * normalizedVelocity * (1.0f - normalizedDiff)));
-            p->blueLeds[i]->setPWMValue(uint8_t(100.0f * normalizedVelocity * normalizedDiff));
+            p->redLeds[i].setPWMValue(uint8_t(100.0f * normalizedVelocity * (1.0f - normalizedDiff)));
+            p->greenLeds[i].setPWMValue(uint8_t(100.0f * normalizedVelocity * normalizedDiff));
         }
     }
 }
@@ -136,24 +122,25 @@ volatile uint8_t currentBeat = 0;
 uint8_t currentBar = 0;
 uint16_t bpm = 120;
 
-void playBeat(uint8_t beatNumber)
+static void playBeat(uint8_t beatNumber)
 {
-    static std::vector<Note> previousNotes;
-    for (const auto& note: previousNotes) {
-        usbMIDI.sendNoteOff(note._noteNumber, note._velocity, note._channel);
-    }
+    // static std::vector<Note> previousNotes;
+    // for (const auto& note: previousNotes) {
+    //     usbMIDI.sendNoteOff(note._noteNumber, note._velocity, note._channel);
+    // }
 
-    previousNotes.clear();
+    // previousNotes.clear();
 
     DBG("Beat %d\n", beatNumber);
     for (const auto& note : seq->getNotes(beatNumber)) {
         DBG("\t%d sent\n", note._noteNumber);
-        previousNotes.push_back(note);
+        // previousNotes.push_back(note);
         usbMIDI.sendNoteOn(note._noteNumber, note._velocity, note._channel);
+        usbMIDI.sendNoteOff(note._noteNumber, note._velocity, note._channel);
     }
 }
 
-void playNextBeat()
+static void playNextBeat()
 {
     playBeat(currentBeat);
     currentBeat = (currentBeat + 1) % Instrument::s_beatNumber;
@@ -197,32 +184,40 @@ void setup()
 {
 #if _ENABLE_SERIAL == 1
     Serial.begin(115200);
-    while (!Serial && millis() < 1000) ;
+    while (!Serial && millis() < 5000) ;
 #endif
-    DBG("Setup started\n");
+    //DBG("Size of raw pointer: %d\n", sizeof(int*));
+    //DBG("Size of std::unique_ptr: %d\n", sizeof(std::unique_ptr<int>));
+    //DBG("Size of std::array: %d\n", sizeof(std::array<int, 1>));
+    //DBG("Size of std::vector: %d\n", sizeof(std::vector<int>));
+    DBG("Size of Peripherals: %d\n", sizeof(Peripherals));
+    DBG("Size of Sequencer: %d\n", sizeof(Sequencer));
 
-    constexpr unsigned long startupDelay = 500;
-    delay(startupDelay);
+    DBG("Setup started, free RAM: %d\n", FreeRam());
+
+    constexpr unsigned long startupDelay = 1000;
+    //delay(startupDelay);
 
     Wire.begin();
     p = new Peripherals();
     p->init(startupDelay);
-    DBG("Peripherals initialized\n");
+    DBG("Peripherals initialized, free RAM: %d\n", FreeRam());
 
     usbMIDI.setHandleRealTimeSystem(midiRealtimeCallback);
     DBG("MIDI handling initialized\n");
 
     seq = new Sequencer();
-    DBG("Sequencer initialized\n");
+    DBG("Sequencer initialized, free RAM: %d\n", FreeRam());
 
     p->clearLeds();
     p->updateLeds();
     p->updateButtons();
-    p->slider->update();
+    p->redSlider.update();
+    p->yellowSlider.update();
     playStartupAnimation();
     printInstrumentInfo(seq->getCurrentInstrument());
 
-    DBG("Setup done\n");
+    DBG("Setup done, free RAM: %d\n", FreeRam());
 }
 
 int editedNote = -1;
@@ -231,58 +226,63 @@ void loop()
 {
     usbMIDI.read();
 
-    const auto sliderUpdated = p->slider->update();
+    // const auto sliderUpdated = p->slider->update();
+    const auto yellowSliderUpdated = p->yellowSlider.update();
+    const auto redSliderUpdated = p->redSlider.update();
     p->updateButtons();
 
-    const bool barSelect = p->barSelectButton->read() == LOW;
-    const bool instrumentSelect = p->channelSelectButton->read() == LOW;
-    const bool clearPressed = p->clearButton->read() == LOW;
-    const bool positivePressed = p->positiveButton->fallingEdge();
-    const bool negativePressed = p->negativeButton->fallingEdge();
-    const bool mutePressed = p->muteButton->fallingEdge();
-    const bool muteReleased = p->muteButton->risingEdge();
-    const bool muteMode = p->muteButton->read() == LOW;
+    const bool clearPressed = p->yellowButton.read() == LOW;
+    const bool positivePressed = p->redButton.fallingEdge();
+    const bool negativePressed = p->blueButton.fallingEdge();
+    const bool mutePressed = p->greenButton.fallingEdge();
+    const bool muteReleased = p->greenButton.risingEdge();
+    const bool muteMode = p->greenButton.read() == LOW;
 
-    for (size_t i = 0; i < p->beatButtons.size(); ++i) {
-        if (p->beatButtons[i]->fallingEdge()) {
+    bool instrumentEditMode = false;
+    for (auto& button : p->instrumentButtons)
+        instrumentEditMode |= button.read() == LOW;
+
+    // const bool clearPressed = false;
+    // const bool positivePressed = false;
+    // const bool negativePressed = false;
+    // const bool mutePressed = false;
+    // const bool muteReleased = false;
+    // const bool muteMode = false;
+
+    for (size_t i = 0; i < p->stepButtons.size(); ++i) {
+        if (p->stepButtons[i].fallingEdge()) {
             DBG("Button %d pressed\n", i);
-            if (muteMode) {
-                seq->muteInstrument(i, !seq->isInstrumentMuted(i));
-                seq->setCurrentInstrument(i);
-                printInstrumentInfo(seq->getCurrentInstrument());
-            } else if (barSelect) {
-                currentBar = i / 4;
-            } else if (instrumentSelect) {
-                seq->setCurrentInstrument(i);
-                printInstrumentInfo(seq->getCurrentInstrument());
-            } else {
-                const auto noteIdx = currentBar * 8 + i;
-                auto &instrument = seq->getCurrentInstrument();
-                instrument.toggleNote(noteIdx);    
-                if (instrument.isActiveNote(noteIdx)) {
-                    editedNote = noteIdx;
-                    printNoteInfo(seq->getCurrentInstrument().getNote(noteIdx));
-                }
+            const auto noteIdx = currentBar * 8 + i;
+            auto &instrument = seq->getCurrentInstrument();
+            instrument.toggleNote(noteIdx);    
+            if (instrument.isActiveNote(noteIdx)) {
+                editedNote = noteIdx;
+                printNoteInfo(seq->getCurrentInstrument().getNote(noteIdx));
             }
-        } else if (p->beatButtons[i]->risingEdge()) {
-            if (barSelect) {
-                ;
-            } else if (instrumentSelect) {
-                ;
-            } else {
-                editedNote = -1;
-                printInstrumentInfo(seq->getCurrentInstrument());
-            }
+        } else if (p->stepButtons[i].risingEdge()) {
+            editedNote = -1;
+            printInstrumentInfo(seq->getCurrentInstrument());
         }
     }
+    for (size_t i = 0; i < p->instrumentButtons.size(); ++i) {
+        if (p->instrumentButtons[i].fallingEdge()) {
+            if (muteMode) {
+                seq->muteInstrument(i, !seq->isInstrumentMuted(i));
+            }
+
+            seq->setCurrentInstrument(i);
+            printInstrumentInfo(seq->getCurrentInstrument());
+        } else if (p->instrumentButtons[i].risingEdge()) {
+            printInstrumentInfo(seq->getCurrentInstrument());
+        }
+    }
+
     if (clearPressed) {
-        if (barSelect) {
-            ;
-        } else if (instrumentSelect) {
+        if (instrumentEditMode) {
             seq->getCurrentInstrument().clear();
             for (auto& led : p->blueLeds) {
-                led->turnOn();
-                led->update();
+                led.turnOn();
+                led.update();
             }
             return;
         } else if (editedNote > -1) {
@@ -290,17 +290,15 @@ void loop()
         } else {
             seq->clearInstruments();
             for (auto& led : p->blueLeds) {
-                led->turnOn();
-                led->update();
+                led.turnOn();
+                led.update();
             }
         }
         return;
     }
     if (positivePressed || negativePressed) {
         const auto increment = positivePressed ? 1 : -1;
-        if (barSelect) {
-            ;
-        } else if (instrumentSelect) {
+        if (instrumentEditMode) {
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
             note._noteNumber += increment;
@@ -315,9 +313,7 @@ void loop()
         }
     }
     if (mutePressed) {
-        if (barSelect) {
-            ;
-        } else if (instrumentSelect) {
+        if (instrumentEditMode) {
             seq->muteInstrument(seq->getCurrentInstrumentIdx(), true);
         } else if (editedNote > -1) {
             ;
@@ -328,65 +324,78 @@ void loop()
     if (muteReleased) {
         seq->muteAllInstruments(false);
     }
-    if (sliderUpdated) {
-        const auto newValue = p->slider->readLevel();
-        if (barSelect) {
-            ;
-        } else if (instrumentSelect) {
+    if (redSliderUpdated) {
+        if (instrumentEditMode) {
+            const auto newPitch = round(p->redSlider.readNormalizedRawValue() * 24);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
-            note._velocity = min(32 * newValue, 127);
+            note._noteNumber = 36u + newPitch;
             instrument.setDefaultNote(note);
-            printInstrumentInfo(instrument);
+            printNoteInfo(note);
         } else if (editedNote > -1) {
+            const auto newPitch = round(p->redSlider.readNormalizedRawValue() * 24) - 12;
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getNote(editedNote);
-            note._velocity = min(32 * newValue, 127);
+            note._noteNumber = instrument.getDefaultNote()._noteNumber + newPitch;
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
+        } else {
+            const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
+            const auto &instrument = seq->getCurrentInstrument();
+            const auto channel = instrument.getDefaultNote()._channel;
+            const auto cc = instrument.getCC(0);
+            usbMIDI.sendControlChange(cc, value, channel);
+        }
+    }
+    if (yellowSliderUpdated) {
+        if (instrumentEditMode) {
+            const auto newValue = round(p->yellowSlider.readNormalizedRawValue() * 127);
+            auto &instrument = seq->getCurrentInstrument();
+            Note note = instrument.getDefaultNote();
+            note._velocity = newValue;
+            instrument.setDefaultNote(note);
+            printNoteInfo(note);
+        } else if (editedNote > -1) {
+            const auto newValue = round(p->yellowSlider.readNormalizedRawValue() * 127);
+            auto &instrument = seq->getCurrentInstrument();
+            Note note = instrument.getNote(editedNote);
+            note._velocity = newValue;
+            instrument.setNote(editedNote, note);
+            printNoteInfo(note);
+        } else {
+            const auto value = round(p->yellowSlider.readNormalizedRawValue() * 127);
+            const auto &instrument = seq->getCurrentInstrument();
+            const auto channel = instrument.getDefaultNote()._channel;
+            const auto cc = instrument.getCC(1);
+            usbMIDI.sendControlChange(cc, value, channel);
         }
     }
 
     p->clearLeds();
 
-    // Update beat LEDs
+    // Update instrument LEDs
     if (muteMode) {
-        for (size_t i = 0; i < p->beatButtons.size(); ++i) {
+        for (size_t i = 0; i < p->instrumentButtons.size(); ++i) {
             if (seq->isInstrumentMuted(i)) {
-                p->greenLeds[i]->turnOn();
+                p->instrumentLeds[i].turnOn();
             }
         }
-    } else if (barSelect) {
-        for (size_t i = 0; i < p->beatButtons.size(); ++i) {
-            if (i / 4 == currentBar) {
-                p->redLeds[i]->turnOn();
-            }
-        }
-    } else if (instrumentSelect) {
-        p->blueLeds[seq->getCurrentInstrumentIdx()]->turnOn();
     } else {
-        colorActiveNotes(seq->getCurrentInstrument(), currentBar);
-        const auto currentBeatLed = (currentBeat + Instrument::s_beatNumber - 1) % Instrument::s_beatNumber - currentBar * 8;
-        for (size_t i = 0; i < p->beatButtons.size(); ++i) {
-            if (isPlaying && (currentBeatLed >= 0 && currentBeatLed < 8)) {
-                p->greenLeds[currentBeatLed]->turnOn();
-            }
-            // if (seq->getInstrument(currentInstrument).isActiveNote(i + currentBar * 8)) {
-            //     p->redLeds[i]->turnOn();
-            // }
-        }
+        p->instrumentLeds[seq->getCurrentInstrumentIdx()].turnOn();
     }
 
+    // Update step LEDs
+    colorActiveNotes(seq->getCurrentInstrument(), currentBar);
+    const auto currentBeatLed = (currentBeat + Instrument::s_beatNumber - 1) % Instrument::s_beatNumber - currentBar * 8;
+    if (isPlaying && (currentBeatLed >= 0 && currentBeatLed < 16)) {
+        p->greenLeds[currentBeatLed].turnOn();
+    }
+
+
     // Update status LEDs
-    if (barSelect) {
-        p->barSelectLed->turnOn();
-    } else if (instrumentSelect) {
-        p->channelSelectLed->turnOn();
-    } else {
-        if (isPlaying) {
-            if ((currentBeat + Instrument::s_beatNumber - 1) % 4 < 2) {
-                p->barSelectLed->turnOn();
-            }
+    if (isPlaying) {
+        if ((currentBeat + Instrument::s_beatNumber - 1) % 4 < 2) {
+            p->yellowLed.turnOn();
         }
     }
     p->updateLeds();

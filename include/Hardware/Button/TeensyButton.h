@@ -1,12 +1,12 @@
 #pragma once
 
 #include "ButtonBase.h"
-#include "Bounce.h"
+#include "Bounce_Teensy.h"
 
 class TeensyButton : public ButtonBase
 {
 public:
-    TeensyButton(uint8_t pin, unsigned long interval_millis);
+    TeensyButton(uint8_t pin, uint8_t interval_millis);
     virtual ~TeensyButton() = default;
 
     void init() override;
@@ -16,7 +16,6 @@ public:
     bool fallingEdge() override;
 
 private:
-    uint8_t _pin;
-    Bounce _bounce;
+    Bounce_Teensy _bounce;
 };
 

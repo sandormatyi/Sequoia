@@ -8,7 +8,7 @@
 class Sequencer 
 {
 public:
-    static constexpr uint8_t s_instrumentNumber = 8;
+    static constexpr uint8_t s_instrumentNumber = 4;
 
     Sequencer();
     ~Sequencer();
@@ -27,7 +27,7 @@ public:
     void muteAllInstruments(bool isMuted);
 
 private:
-    std::array<Instrument*, s_instrumentNumber> _instruments;
+    std::array<Instrument, s_instrumentNumber> _instruments;
     std::array<bool, s_instrumentNumber> _isMuted;
     uint8_t _currentInstrument = 0;
 };

@@ -25,18 +25,17 @@
  risingEdge and fallingEdge contributed by Tom Harkaway
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef Bounce_MCP_h
-#define Bounce_MCP_h
+#ifndef BounceTeensy_h
+#define BounceTeensy_h
 
 #include <inttypes.h>
-#include "Adafruit_MCP23017.h"
 
-class Bounce_MCP
+class Bounce_Teensy
 {
 
 public:
 	// Initialize
-  Bounce_MCP(Adafruit_MCP23017& mcp, uint8_t pin, uint8_t interval_millis); 
+  Bounce_Teensy(uint8_t pin,uint8_t interval_millis ); 
 	// Sets the debounce interval
   void interval(uint8_t interval_millis); 
 	// Updates the pin
@@ -54,20 +53,16 @@ public:
   // The fallingEdge  method it true for one scan after the de-bounced input goes from on-to-off. 
 	bool fallingEdge();
 
-  Adafruit_MCP23017 &getMCP();
-  uint8_t getPin();
+    uint8_t getPin() { return pin; }
 
 protected:
   int debounce();
-
-  Adafruit_MCP23017& _mcp;
   unsigned long  previous_millis;
-  uint8_t _interval_millis;
+  uint8_t interval_millis;
 
-  uint8_t _pin : 4;
-  uint8_t _state : 1;
-  uint8_t _stateChanged : 1;
-
+  uint8_t pin : 6;
+  uint8_t state : 1;
+  uint8_t stateChanged : 1;
 };
 
 #endif

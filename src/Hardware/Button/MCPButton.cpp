@@ -1,17 +1,15 @@
 #include "Hardware/Button/MCPButton.h"
 #include "Adafruit_MCP23017.h"
 
-MCPButton::MCPButton(Adafruit_MCP23017 &mcp, uint8_t pin, unsigned long interval_millis) 
-    : _mcp(mcp)
-    , _pin(pin)
-    , _bounce(mcp, pin, interval_millis) 
+MCPButton::MCPButton(Adafruit_MCP23017 &mcp, uint8_t pin, uint8_t interval_millis) 
+    : _bounce(mcp, pin, interval_millis) 
 {
 }
 
 void MCPButton::init()
 {
-    _mcp.pinMode(_pin, INPUT);
-    _mcp.pullUp(_pin, HIGH);
+    _bounce.getMCP().pinMode(_bounce.getPin(), INPUT);
+    _bounce.getMCP().pullUp(_bounce.getPin(), HIGH);
 }
 
 int MCPButton::update()

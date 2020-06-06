@@ -1,34 +1,34 @@
 #include "Hardware/Led/PCALed.h"
 #include <PCA9685.h>
+#include "DBG.h"
 
 PCALed::PCALed(PCA9685 &pca, uint8_t pin, bool inverted /*= false*/) 
-    : LedBase(true)
+    : LazyLedBase(pin, inverted)
     , _pca(pca)
-    , _pin(pin)
-    , _inverted(inverted) 
 {
+    // DBG("PCA Led on pin %d\n", _fields.pin);
 }
 
 void PCALed::_turnOn() 
 {
-    if (_inverted) {
-        _pca.getPin(_pin).fullOnAndWrite();
+    if (_fields.inverted) {
+        _pca.getPin(_fields.pin).fullOnAndWrite();
     } else {
-        _pca.getPin(_pin).fullOffAndWrite();
+        _pca.getPin(_fields.pin).fullOffAndWrite();
     }
 }
 
 void PCALed::_turnOff()
 { 
-    if (_inverted) {
-        _pca.getPin(_pin).fullOffAndWrite();
+    if (_fields.inverted) {
+        _pca.getPin(_fields.pin).fullOffAndWrite();
     } else {
-        _pca.getPin(_pin).fullOnAndWrite();
+        _pca.getPin(_fields.pin).fullOnAndWrite();
     }
 }
 
 void PCALed::_setPWMValue(uint8_t percent)
 {
     uint16_t value = (uint16_t(percent) * PCA9685_MAX_VALUE) / 100;
-    _pca.getPin(_pin).setValueAndWrite(_inverted ? value : PCA9685_MAX_VALUE - value); 
+    _pca.getPin(_fields.pin).setValueAndWrite(_fields.inverted ? value : PCA9685_MAX_VALUE - value); 
 }

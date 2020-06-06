@@ -1,10 +1,10 @@
 #pragma once
 
-#include "LedBase.h"
+#include "LazyLedBase.h"
 
 class Adafruit_MCP23017;
 
-class MCPLed : public LedBase
+class MCPLed : public LazyLedBase
 {
 public:
     MCPLed(Adafruit_MCP23017 &mcp, uint8_t pin, bool inverted = false);
@@ -18,6 +18,4 @@ protected:
 
 private:
     Adafruit_MCP23017 &_mcp;
-    uint8_t _pin;
-    bool _inverted;
 };

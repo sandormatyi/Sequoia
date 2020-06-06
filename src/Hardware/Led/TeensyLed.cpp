@@ -2,31 +2,30 @@
 #include "Arduino.h"
 
 TeensyLed::TeensyLed(uint8_t pin, bool inverted /*= false*/)
-    : LedBase(false)
-    , _pin(pin)
-    , _inverted(inverted)
+    : LedBase()
+    , _fields{pin, inverted}
 {
 }
 
 void TeensyLed::_init()
 {
-    pinMode(_pin, OUTPUT);
+    pinMode(_fields.pin, OUTPUT);
 }
 
 void TeensyLed::_turnOn()
 {
-    digitalWrite(_pin, _inverted ? LOW : HIGH);
+    digitalWrite(_fields.pin, _fields.inverted ? LOW : HIGH);
 }
 
 void TeensyLed::_turnOff()
 {
-    digitalWrite(_pin, _inverted ? HIGH : LOW);
+    digitalWrite(_fields.pin, _fields.inverted ? HIGH : LOW);
 }
 
 void TeensyLed::_setPWMValue(uint8_t percent)
 {
     int value = percent * 256 / 100;
-    switch (_pin)
+    switch (_fields.pin)
     {
     case 3:
     case 4:
@@ -38,7 +37,7 @@ void TeensyLed::_setPWMValue(uint8_t percent)
     case 20:
     case 22:
     case 23:
-        analogWrite(_pin, _inverted ? 256 - value : value);
+        analogWrite(_fields.pin, _fields.inverted ? 256 - value : value);
         break;
     default:
         // if (value < 128) {

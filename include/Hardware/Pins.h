@@ -1,37 +1,50 @@
 #pragma once
 
 enum Teensy_Pins {
-  PIN_PB_CS = 23,
-  PIN_PB_BS = 22,
-  PIN_PB_CLR = 21,
-  PIN_PB_MUTE = 4,
-  PIN_PB_POS = 3,
-  PIN_PB_NEG = 2,
-
-  PIN_LED_CS = 15,
-  PIN_LED_BS = 14,
-
   PIN_SLD_DIN = 10,
   PIN_SLD_CLK = 11,
-  PIN_SLD_CS = 12
+  PIN_SLD_CS = 12,
+
+  PIN_POT_RED = 23,
+  PIN_POT_YELLOW = 22
 };
 
-enum MCP_Pins {
-  PIN_LED_8_G = 0,
-  PIN_LED_7_G = 1,
-  PIN_LED_6_G = 2,
-  PIN_LED_5_G = 3,
-  PIN_LED_4_G = 4,
-  PIN_LED_3_G = 5,
-  PIN_LED_2_G = 6,
-  PIN_LED_1_G = 7,
+enum MCP_1_Pins {
+  PIN_PB_1 = 7,
+  PIN_PB_2 = 6,
+  PIN_PB_3 = 5,
+  PIN_PB_4 = 4,
+  PIN_PB_5 = 3,
+  PIN_PB_6 = 2,
+  PIN_PB_7 = 1,
+  PIN_PB_8 = 0,
 
-  PIN_PB_1 = 8,
-  PIN_PB_2 = 9,
-  PIN_PB_3 = 10,
-  PIN_PB_4 = 11,
-  PIN_PB_5 = 12,
-  PIN_PB_6 = 13,
-  PIN_PB_7 = 14,
-  PIN_PB_8 = 15
+  PIN_PB_9 = 8,
+  PIN_PB_10 = 9,
+  PIN_PB_11 = 10,
+  PIN_PB_12 = 11,
+  PIN_PB_13 = 12,
+  PIN_PB_14 = 13,
+  PIN_PB_15 = 14,
+  PIN_PB_16 = 15
+};
+
+enum MCP_2_Pins {
+  PIN_PB_INST_1 = 8,
+  PIN_PB_INST_2 = 9,
+  PIN_PB_INST_3 = 10,
+  PIN_PB_INST_4 = 11,
+  PIN_PB_YELLOW = 12,
+  PIN_PB_RED = 13,
+  PIN_PB_BLUE = 14,
+  PIN_PB_GREEN = 15,
+
+  PIN_LED_INST_1 = 7,
+  PIN_LED_INST_2 = 6,
+  PIN_LED_INST_3 = 5,
+  PIN_LED_INST_4 = 4,
+  PIN_LED_YELLOW = 3,
+  PIN_LED_RED = 2,
+  PIN_LED_BLUE = 1,
+  PIN_LED_GREEN = 0,
 };

@@ -4,10 +4,12 @@
 #include <array>
 #include <vector>
 #include <memory>
-
-class ButtonBase;
-class LedBase;
-class SliderBase;
+#include "Hardware/Button/MCPButton.h"
+#include "Hardware/Button/MCPInterruptButton.h"
+#include "Hardware/Button/TeensyButton.h"
+#include "Hardware/Led/MCPLed.h"
+#include "Hardware/Led/PCALed.h"
+#include "Hardware/Slider/TeensySlider.h"
 
 struct Peripherals
 {
@@ -19,26 +21,27 @@ struct Peripherals
     void updateLeds();
 
     LedControl sld;
-    Adafruit_MCP23017 mcp;
-    PCA9685 pca;
+    Adafruit_MCP23017 mcp1;
+    Adafruit_MCP23017 mcp2;
+    PCA9685 pca1;
+    PCA9685 pca2;
 
-    std::array<std::unique_ptr<ButtonBase>, 8> beatButtons;
-    std::unique_ptr<ButtonBase> channelSelectButton;
-    std::unique_ptr<ButtonBase> barSelectButton;
-    std::unique_ptr<ButtonBase> clearButton;
-    std::unique_ptr<ButtonBase> positiveButton;
-    std::unique_ptr<ButtonBase> negativeButton;
-    std::unique_ptr<ButtonBase> muteButton;
+    std::array<MCPButton, 16> stepButtons;
+    std::array<MCPButton, 4> instrumentButtons;
+    MCPButton yellowButton;
+    MCPButton redButton;
+    MCPButton blueButton;
+    MCPButton greenButton;
 
-    std::array<std::unique_ptr<LedBase>, 8> redLeds;
-    std::array<std::unique_ptr<LedBase>, 8> blueLeds;
-    std::array<std::unique_ptr<LedBase>, 8> greenLeds;
-    std::unique_ptr<LedBase> channelSelectLed;
-    std::unique_ptr<LedBase> barSelectLed;
+    std::array<PCALed, 16> redLeds;
+    std::array<PCALed, 16> greenLeds;
+    std::array<PCALed, 16>& blueLeds;
+    std::array<MCPLed, 4> instrumentLeds;
+    MCPLed yellowLed;
+    MCPLed redLed;
+    MCPLed blueLed;
+    MCPLed greenLed;
 
-    std::unique_ptr<SliderBase> slider;
-
-private:
-    std::vector<std::reference_wrapper<ButtonBase>> _buttons;
-    std::vector<std::reference_wrapper<LedBase>> _leds;
+    TeensySlider redSlider;
+    TeensySlider yellowSlider;
 };

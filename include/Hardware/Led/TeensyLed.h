@@ -15,6 +15,8 @@ protected:
     void _setPWMValue(uint8_t percent) override;
 
 private:
-    uint8_t _pin;
-    bool _inverted;
+    struct Fields {
+        uint8_t pin : 5;
+        uint8_t inverted : 1;
+    } _fields;
 };

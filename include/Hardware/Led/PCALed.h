@@ -1,10 +1,10 @@
 #pragma once
 
-#include "LedBase.h"
+#include "LazyLedBase.h"
 
 class PCA9685;
 
-class PCALed : public LedBase
+class PCALed : public LazyLedBase
 {
 public:
     PCALed(PCA9685 &pca, uint8_t pin, bool inverted = false);
@@ -17,6 +17,4 @@ protected:
 
 private:
     PCA9685 &_pca;
-    uint8_t _pin;
-    bool _inverted;
 };

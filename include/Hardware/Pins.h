@@ -6,8 +6,8 @@ enum Teensy_Pins
   PIN_SLD_CLK = 11,
   PIN_SLD_CS = 12,
 
-  PIN_POT_BLACK = 23,
-  PIN_POT_RED = 22,
+  PIN_POT_RED = 23,
+  PIN_POT_BLACK = 22,
   PIN_POT_INST_1 = 14,
   PIN_POT_INST_2 = 15,
   PIN_POT_INST_3 = 20,

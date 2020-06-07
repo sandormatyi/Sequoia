@@ -210,8 +210,8 @@ void setup()
     p->clearLeds();
     p->updateLeds();
     p->updateButtons();
-    p->blackSlider.update();
     p->redSlider.update();
+    p->blackSlider.update();
     for (auto &slider : p->instrumentSliders)
         slider.update();
 
@@ -227,8 +227,8 @@ void loop()
 {
     usbMIDI.read();
 
-    const auto redSliderUpdated = p->redSlider.update();
     const auto blackSliderUpdated = p->blackSlider.update();
+    const auto redSliderUpdated = p->redSlider.update();
     p->updateButtons();
 
     const bool clearPressed = p->yellowButton.read() == LOW;
@@ -344,53 +344,53 @@ void loop()
     if (muteReleased) {
         seq->muteAllInstruments(false);
     }
-    if (blackSliderUpdated) {
+    if (redSliderUpdated) {
         if (instrumentEditMode) {
-            const auto newPitch = round(p->blackSlider.readNormalizedRawValue() * 24);
+            const auto newPitch = round(p->redSlider.readNormalizedRawValue() * 24);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
             note._noteNumber = 36u + newPitch;
             instrument.setDefaultNote(note);
             printNoteInfo(note);
         } else if (editedNote > -1) {
-            const auto newPitch = round(p->blackSlider.readNormalizedRawValue() * 24) - 12;
+            const auto newPitch = round(p->redSlider.readNormalizedRawValue() * 24) - 12;
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getNote(editedNote);
             note._noteNumber = instrument.getDefaultNote()._noteNumber + newPitch;
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
         } else if (syncMode == SyncMode::Internal && p->blueButton.read() == LOW) {
-            const auto value = p->blackSlider.readNormalizedRawValue() * 2.0;
+            const auto value = p->redSlider.readNormalizedRawValue() * 2.0;
             bpm = 60.0 * pow(2.0, value);
             DBG("BPM is %d\n", (int)bpm);
             const auto microsecondsPerStep = 1'000'000.0 / (bpm / 60.0 * 4.0);
             internalMetronome.update(microsecondsPerStep);
             printBpmInfo(bpm);
         } else {
-            const auto value = round(p->blackSlider.readNormalizedRawValue() * 127);
+            const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
             const auto channel = seq->getCurrentInstrument().getDefaultNote()._channel;
             const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][1];
             DBG("CC %d: %d\n", ccNumber, value);
             usbMIDI.sendControlChange(ccNumber, value, channel);
         }
     }
-    if (redSliderUpdated) {
+    if (blackSliderUpdated) {
         if (instrumentEditMode) {
-            const auto newValue = round(p->redSlider.readNormalizedRawValue() * 127);
+            const auto newValue = round(p->blackSlider.readNormalizedRawValue() * 127);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
             note._velocity = newValue;
             instrument.setDefaultNote(note);
             printNoteInfo(note);
         } else if (editedNote > -1) {
-            const auto newValue = round(p->redSlider.readNormalizedRawValue() * 127);
+            const auto newValue = round(p->blackSlider.readNormalizedRawValue() * 127);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getNote(editedNote);
             note._velocity = newValue;
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
         } else {
-            const auto value = round(p->blackSlider.readNormalizedRawValue() * 127);
+            const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
             const auto channel = seq->getCurrentInstrument().getDefaultNote()._channel;
             const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][2];
             DBG("CC %d: %d\n", ccNumber, value);

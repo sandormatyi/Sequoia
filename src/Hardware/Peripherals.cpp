@@ -116,12 +116,12 @@ Peripherals::Peripherals()
     , greenLed(mcp2, PIN_LED_GREEN)
     // Sliders
     , instrumentSliders {
-        TeensySlider(PIN_POT_INST_1, 32),
-        TeensySlider(PIN_POT_INST_2, 32),
-        TeensySlider(PIN_POT_INST_3, 32),
-        TeensySlider(PIN_POT_INST_4, 32)}
-    , redSlider(PIN_POT_RED, 32)
-    , blackSlider(PIN_POT_BLACK, 32)
+        TeensySlider(PIN_POT_INST_1, 64),
+        TeensySlider(PIN_POT_INST_2, 64),
+        TeensySlider(PIN_POT_INST_3, 64),
+        TeensySlider(PIN_POT_INST_4, 64)}
+    , redSlider(PIN_POT_RED, 64)
+    , blackSlider(PIN_POT_BLACK, 64)
 {
     DBG("Size of MCP: %d\n", sizeof(Adafruit_MCP23017));
     DBG("Size of PCA: %d\n", sizeof(PCA9685));
@@ -186,8 +186,8 @@ void Peripherals::init(unsigned long startupDelay)
     blueButton.init();
     greenButton.init();
 
-    blackSlider.init();
     redSlider.init();
+    blackSlider.init();
     for (auto &slider : instrumentSliders)
         slider.init();
 }

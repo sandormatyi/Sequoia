@@ -105,7 +105,7 @@ Peripherals::Peripherals()
     //     std::make_unique<MCPLed>(mcp2, PIN_LED_14_B, true),
     //     std::make_unique<MCPLed>(mcp2, PIN_LED_15_B, true),
     //     std::make_unique<MCPLed>(mcp2, PIN_LED_16_B, true)}
-    , instrumentLeds{
+    , instrumentLeds {
         MCPLed(mcp2, PIN_LED_INST_1),
         MCPLed(mcp2, PIN_LED_INST_2),
         MCPLed(mcp2, PIN_LED_INST_3),
@@ -117,12 +117,11 @@ Peripherals::Peripherals()
     // Sliders
     , blackSlider(PIN_POT_BLACK, 32)
     , redSlider(PIN_POT_RED, 32)
-    , instrumentSliders{
+    , instrumentSliders {
         TeensySlider(PIN_POT_INST_1, 16),
         TeensySlider(PIN_POT_INST_2, 16),
         TeensySlider(PIN_POT_INST_3, 16),
-        TeensySlider(PIN_POT_INST_4, 16)
-    }
+        TeensySlider(PIN_POT_INST_4, 16)}
 {
     DBG("Size of MCP: %d\n", sizeof(Adafruit_MCP23017));
     DBG("Size of PCA: %d\n", sizeof(PCA9685));

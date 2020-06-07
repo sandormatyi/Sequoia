@@ -11,6 +11,7 @@
 #include "Sequencer/Instrument.h"
 #include "Sequencer/Sequencer.h"
 #include "Sequencer/PlayHead.h"
+#include "Sequencer/CC.h"
 #include "Hardware/Slider/TeensySlider.h"
 #include "DBG.h"
 #include <glob.h>
@@ -52,7 +53,7 @@ void printNoteInfo(const Note& note)
     p->sld.setChar(0, 0, note._velocity % 10, false);
 }
 
-void printBpmInfo(const double bpm) 
+void printBpmInfo(const double bpm)
 {
     p->sld.clearDisplay(0);
     p->sld.setChar(0, 7, 'B', false);
@@ -79,29 +80,29 @@ void playStartupAnimation()
         p->instrumentLeds[i / 4].turnOn();
         p->instrumentLeds[i / 4].update();
         switch(i / 4) {
-            case 0:
-                p->yellowLed.turnOn();
-                p->yellowLed.update();
-                break;
-            case 1:
-                p->redLed.turnOn();
-                p->redLed.update();
-                break;
-            case 2:
-                p->blueLed.turnOn();
-                p->blueLed.update();
-                break;
-            case 3:
-                p->greenLed.turnOn();
-                p->greenLed.update();
-                break;
+        case 0:
+            p->yellowLed.turnOn();
+            p->yellowLed.update();
+            break;
+        case 1:
+            p->redLed.turnOn();
+            p->redLed.update();
+            break;
+        case 2:
+            p->blueLed.turnOn();
+            p->blueLed.update();
+            break;
+        case 3:
+            p->greenLed.turnOn();
+            p->greenLed.update();
+            break;
         }
 
         delay(animationDelay);
     }
 }
 
-static void colorActiveNotes(Instrument& instrument, uint8_t barIdx) 
+static void colorActiveNotes(Instrument& instrument, uint8_t barIdx)
 {
     // uint8_t minNote = 255;
     // uint8_t maxNote = 0;
@@ -126,9 +127,9 @@ static void colorActiveNotes(Instrument& instrument, uint8_t barIdx)
         const auto idx = i + (barIdx * 16);
         if (instrument.isActiveNote(idx)) {
             const auto &note = instrument.getNote(idx);
-            const auto diffFromMax = (note._noteNumber > maxNote) ? 0 : 
+            const auto diffFromMax = (note._noteNumber > maxNote) ? 0 :
                                      (note._noteNumber < minNote) ? range * 2 :
-                                      maxNote - note._noteNumber;
+                                     maxNote - note._noteNumber;
 
             const auto normalizedDiff = float(diffFromMax) / float(range * 2);
             const auto normalizedVelocity = float(note._velocity) / 127.0f;
@@ -155,7 +156,7 @@ void midiRealtimeCallback(uint8_t msg)
         clockCounter++;
         if (clockCounter % 6 == 0)
             playHead->step();
-            clockCounter = clockCounter % 24;
+        clockCounter = clockCounter % 24;
     }
 
     if (msg == START || msg == CONTINUE) {
@@ -211,6 +212,9 @@ void setup()
     p->updateButtons();
     p->blackSlider.update();
     p->redSlider.update();
+    for (auto &slider : p->instrumentSliders)
+        slider.update();
+
     playStartupAnimation();
     printInstrumentInfo(seq->getCurrentInstrument());
 
@@ -223,9 +227,9 @@ void loop()
 {
     usbMIDI.read();
 
-    // const auto sliderUpdated = p->slider->update();
     const auto redSliderUpdated = p->redSlider.update();
-    const auto blackSliderUpdated = p->blackSlider.update();    
+    const auto blackSliderUpdated = p->blackSlider.update();
+    p->updateButtons();
 
     const bool clearPressed = p->yellowButton.read() == LOW;
     const bool redButtonPressed = p->redButton.fallingEdge();
@@ -250,7 +254,7 @@ void loop()
             DBG("Button %d pressed\n", i);
             const auto noteIdx = currentBar * 8 + i;
             auto &instrument = seq->getCurrentInstrument();
-            instrument.toggleNote(noteIdx);    
+            instrument.toggleNote(noteIdx);
             if (instrument.isActiveNote(noteIdx)) {
                 editedNote = noteIdx;
                 printNoteInfo(seq->getCurrentInstrument().getNote(noteIdx));
@@ -364,11 +368,10 @@ void loop()
             printBpmInfo(bpm);
         } else {
             const auto value = round(p->blackSlider.readNormalizedRawValue() * 127);
-            const auto &instrument = seq->getCurrentInstrument();
-            const auto channel = instrument.getDefaultNote()._channel;
-            const auto cc = instrument.getCC(1);
-            DBG("CC %d: %d\n", cc, value);
-            usbMIDI.sendControlChange(cc, value, channel);
+            const auto channel = seq->getCurrentInstrument().getDefaultNote()._channel;
+            const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][1];
+            DBG("CC %d: %d\n", ccNumber, value);
+            usbMIDI.sendControlChange(ccNumber, value, channel);
         }
     }
     if (redSliderUpdated) {
@@ -387,20 +390,18 @@ void loop()
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
         } else {
-            const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
-            const auto &instrument = seq->getCurrentInstrument();
-            const auto channel = instrument.getDefaultNote()._channel;
-            const auto cc = instrument.getCC(2);
-            DBG("CC %d: %d\n", cc, value);
-            usbMIDI.sendControlChange(cc, value, channel);
+            const auto value = round(p->blackSlider.readNormalizedRawValue() * 127);
+            const auto channel = seq->getCurrentInstrument().getDefaultNote()._channel;
+            const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][2];
+            DBG("CC %d: %d\n", ccNumber, value);
+            usbMIDI.sendControlChange(ccNumber, value, channel);
         }
     }
     for (size_t i = 0; i < p->instrumentSliders.size(); ++i) {
         if (p->instrumentSliders[i].update()) {
             const auto value = round(p->instrumentSliders[i].readNormalizedRawValue() * 127);
-            const auto &instrument = seq->getInstrument(i);
-            const auto channel = instrument.getDefaultNote()._channel;
-            const auto cc = instrument.getCC(0);
+            const auto channel = CC::s_globalCCChannel;
+            const auto cc = CC::globalControls[i];
             DBG("CC %d: %d\n", cc, value);
             usbMIDI.sendControlChange(cc, value, channel);
         }

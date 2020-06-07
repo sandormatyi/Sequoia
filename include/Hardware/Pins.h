@@ -8,8 +8,8 @@ enum Teensy_Pins
 
   PIN_POT_BLACK = 23,
   PIN_POT_RED = 22,
-  PIN_POT_INST_1 = 16,
-  PIN_POT_INST_2 = 17,
+  PIN_POT_INST_1 = 14,
+  PIN_POT_INST_2 = 15,
   PIN_POT_INST_3 = 20,
   PIN_POT_INST_4 = 21 
 };

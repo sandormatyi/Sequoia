@@ -115,13 +115,13 @@ Peripherals::Peripherals()
     , blueLed(mcp2, PIN_LED_BLUE)
     , greenLed(mcp2, PIN_LED_GREEN)
     // Sliders
-    , blackSlider(PIN_POT_BLACK, 32)
-    , redSlider(PIN_POT_RED, 32)
     , instrumentSliders {
         TeensySlider(PIN_POT_INST_1, 32),
         TeensySlider(PIN_POT_INST_2, 32),
         TeensySlider(PIN_POT_INST_3, 32),
         TeensySlider(PIN_POT_INST_4, 32)}
+    , redSlider(PIN_POT_RED, 32)
+    , blackSlider(PIN_POT_BLACK, 32)
 {
     DBG("Size of MCP: %d\n", sizeof(Adafruit_MCP23017));
     DBG("Size of PCA: %d\n", sizeof(PCA9685));

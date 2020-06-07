@@ -9,7 +9,7 @@ PlayHead::PlayHead(Sequencer &sequencer)
 {
 }
 
-void PlayHead::start(bool fromBeginning = true)
+void PlayHead::start(bool fromBeginning /*= true*/)
 {
     _isPlaying = true;
     if (fromBeginning)

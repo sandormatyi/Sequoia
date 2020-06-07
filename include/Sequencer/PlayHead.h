@@ -1,5 +1,6 @@
 #pragma once
 
+#include <inttypes.h>
 #include "DBG.h"
 
 class Sequencer;

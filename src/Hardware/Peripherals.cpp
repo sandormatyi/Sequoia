@@ -118,10 +118,10 @@ Peripherals::Peripherals()
     , blackSlider(PIN_POT_BLACK, 32)
     , redSlider(PIN_POT_RED, 32)
     , instrumentSliders {
-        TeensySlider(PIN_POT_INST_1, 16),
-        TeensySlider(PIN_POT_INST_2, 16),
-        TeensySlider(PIN_POT_INST_3, 16),
-        TeensySlider(PIN_POT_INST_4, 16)}
+        TeensySlider(PIN_POT_INST_1, 32),
+        TeensySlider(PIN_POT_INST_2, 32),
+        TeensySlider(PIN_POT_INST_3, 32),
+        TeensySlider(PIN_POT_INST_4, 32)}
 {
     DBG("Size of MCP: %d\n", sizeof(Adafruit_MCP23017));
     DBG("Size of PCA: %d\n", sizeof(PCA9685));

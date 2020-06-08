@@ -24,7 +24,7 @@ public:
     void clear();
 
 private:
-    char _name[5];
+    char _name[7];
     Note _defaultNote;
     std::array<Note, s_stepNumber> _notes;
     std::array<bool, s_stepNumber> _activeNotes;

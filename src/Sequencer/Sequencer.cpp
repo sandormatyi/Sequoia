@@ -3,14 +3,14 @@
 
 Sequencer::Sequencer()
     : _instruments {
-        Instrument("Kick", Note(36, 127, 1)),
-        Instrument("Snr ", Note(38, 127, 2)),
-        Instrument("Hat ", Note(42, 127, 3)),
+        Instrument("  KICK", Note(36, 127, 1)),
+        Instrument(" SNARE", Note(38, 127, 2)),
+        Instrument("  HATS", Note(42, 127, 3)),
         // Instrument("OHat", Note(46, 127, 10)),
         // Instrument("LTom", Note(47, 127, 10)),
         // Instrument("HTom", Note(48, 127, 10)),
         // Instrument("Clap", Note(39, 127, 10)),
-        Instrument("ACID", Note(36, 127, 4))
+        Instrument(" SYNTH", Note(36, 127, 4))
     }
 {
     muteAllInstruments(false);

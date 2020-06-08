@@ -34,19 +34,26 @@ void printInstrumentInfo(const Instrument& instrument)
     p->sld.clearDisplay(0);
     const auto& note = instrument.getDefaultNote();
     const char* name = instrument.getName();
-    p->sld.setDigit(0, 7, note._noteNumber / 10, false);
-    p->sld.setDigit(0, 6, note._noteNumber % 10, false);
-    p->sld.setChar(0, 3, name[0], false);
-    p->sld.setChar(0, 2, name[1], false);
-    p->sld.setChar(0, 1, name[2], false);
-    p->sld.setChar(0, 0, name[3], false);
+    p->sld.setDigit(0, 7, note._channel, true);
+    p->sld.setChar(0, 5, name[0], false);
+    p->sld.setChar(0, 4, name[1], false);
+    p->sld.setChar(0, 3, name[2], false);
+    p->sld.setChar(0, 2, name[3], false);
+    p->sld.setChar(0, 1, name[4], false);
+    p->sld.setChar(0, 0, name[5], false);
 }
 
 void printNoteInfo(const Note& note)
 {
+    static constexpr char notes[] = {'C', 'C', 'D', 'D', 'E', 'F',
+                                     'F', 'G', 'G', 'A', 'A', 'B'};
+    static constexpr bool sharps[] = {false, true,  false, true,  false, false,
+                                      true,  false, true,  false, true,  false};
+
     p->sld.clearDisplay(0);
     p->sld.setDigit(0, 7, note._noteNumber / 10, false);
     p->sld.setDigit(0, 6, note._noteNumber % 10, false);
+    p->sld.setChar(0, 4, notes[note._noteNumber % 12], sharps[note._noteNumber % 12]);
 
     p->sld.setChar(0, 2, note._velocity / 100, false);
     p->sld.setChar(0, 1, (note._velocity % 100) / 10, false);

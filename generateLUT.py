@@ -1,7 +1,7 @@
 INPUT_SIZE = 4095       # Input integer size
 OUTPUT_SIZE = 4095      # Output integer size
-INT_TYPE = 'const unsigned char'
-TABLE_NAME = 'cie';
+INT_TYPE = 'constexpr uint16_t'
+TABLE_NAME = '_lut';
 
 def cie1931(L):
     L = L*100.0
@@ -13,7 +13,9 @@ def cie1931(L):
 x = range(0,int(INPUT_SIZE+1))
 y = [round(cie1931(float(L)/INPUT_SIZE)*OUTPUT_SIZE) for L in x]
 
-f = open('cie1931.h', 'w')
+f = open('_LUT.h', 'w')
+f.write('#pragma once\n')
+f.write('#include <stdint.h>\n\n')
 f.write('// CIE1931 correction table\n')
 f.write('// Automatically generated\n\n')
 

@@ -434,12 +434,15 @@ void loop()
         p->greenLeds[currentStepLed].turnOn();
     }
 
-
     // Update status LEDs
     if (playHead->isPlaying()) {
         if (playHead->getCurrentStep() % 4 < 2) {
             p->blueLed.turnOn();
         }
     }
+    if (muteMode) {
+        p->greenLed.turnOn();
+    }
+    
     p->updateLeds();
 }

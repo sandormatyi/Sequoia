@@ -376,7 +376,7 @@ void loop()
         } else {
             const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
             const auto channel = seq->getCurrentInstrument().getDefaultNote()._channel;
-            const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][1];
+            const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][0];
             DBG("CC %d: %d\n", ccNumber, value);
             usbMIDI.sendControlChange(ccNumber, value, channel);
         }
@@ -399,7 +399,7 @@ void loop()
         } else {
             const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
             const auto channel = seq->getCurrentInstrument().getDefaultNote()._channel;
-            const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][2];
+            const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][1];
             DBG("CC %d: %d\n", ccNumber, value);
             usbMIDI.sendControlChange(ccNumber, value, channel);
         }

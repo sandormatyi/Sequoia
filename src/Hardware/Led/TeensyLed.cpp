@@ -22,9 +22,9 @@ void TeensyLed::_turnOff()
     digitalWrite(_fields.pin, _fields.inverted ? HIGH : LOW);
 }
 
-void TeensyLed::_setPWMValue(uint8_t percent)
+void TeensyLed::_setPWMValue(float normalizedValue)
 {
-    int value = percent * 256 / 100;
+    int value = round(normalizedValue * 255);
     switch (_fields.pin)
     {
     case 3:

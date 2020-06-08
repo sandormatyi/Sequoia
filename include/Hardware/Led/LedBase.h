@@ -10,7 +10,7 @@ public:
     virtual void init() { _init(); _turnOff(); }
     virtual void turnOn() { _turnOn(); }
     virtual void turnOff() { _turnOff(); }
-    virtual void setPWMValue(uint8_t percent) { _setPWMValue(percent); }
+    virtual void setPWMValue(float normalizedValue) { _setPWMValue(normalizedValue); }
     virtual void update() { }
 
 protected:
@@ -21,5 +21,5 @@ protected:
     virtual void _init() {}
     virtual void _turnOn() = 0;
     virtual void _turnOff() = 0;
-    virtual void _setPWMValue(uint8_t percent) = 0;
+    virtual void _setPWMValue(float normalizedValue) = 0;
 };

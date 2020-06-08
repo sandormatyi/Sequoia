@@ -14,7 +14,7 @@ protected:
     void _init() override;
     void _turnOn() override;
     void _turnOff() override;
-    void _setPWMValue(uint8_t percent) override;
+    void _setPWMValue(float normalizedValue) override;
 
 private:
     Adafruit_MCP23017 &_mcp;

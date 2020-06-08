@@ -1,6 +1,6 @@
 #pragma once
 
-#define _ENABLE_SERIAL 0
+#define _ENABLE_SERIAL 1
 
 
 #if _ENABLE_SERIAL == 1

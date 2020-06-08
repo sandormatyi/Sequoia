@@ -1,7 +1,7 @@
 #include "Hardware/Led/LazyLedBase.h"
 
  LazyLedBase::LazyLedBase(uint8_t pin, uint8_t inverted)
-    : _fields{0, 0, 0, 0, pin, inverted}
+    : _fields{0.f, 0.f, 0, 0, pin, inverted}
 {
 }
 
@@ -16,15 +16,15 @@ void LazyLedBase::turnOff()
     _fields.nextState = (uint32_t)State::Off;
 }
 
-void LazyLedBase::setPWMValue(uint8_t percent)
+void LazyLedBase::setPWMValue(float normalizedValue)
 {
     _fields.nextState = (uint32_t)State::PWM;
-    _fields.nextPwmPercent = percent;
+    _fields.nextPwmValue = normalizedValue;
 }
 
 void LazyLedBase::update()
 {
-    if (_fields.nextState != _fields.currentState || (_fields.nextState == (uint32_t)State::PWM && _fields.nextPwmPercent != _fields.pwmPercent))
+    if (_fields.nextState != _fields.currentState || (_fields.nextState == (uint32_t)State::PWM && _fields.nextPwmValue != _fields.pwmValue))
     {
         switch (State(_fields.nextState))
         {
@@ -35,8 +35,8 @@ void LazyLedBase::update()
             _turnOff();
             break;
         case State::PWM:
-            _setPWMValue(_fields.nextPwmPercent);
-            _fields.pwmPercent = _fields.nextPwmPercent;
+            _setPWMValue(_fields.nextPwmValue);
+            _fields.pwmValue = _fields.nextPwmValue;
             break;
         default:
             break;

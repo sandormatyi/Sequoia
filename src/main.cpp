@@ -141,8 +141,8 @@ static void colorActiveNotes(Instrument& instrument, uint8_t barIdx)
             const auto normalizedDiff = float(diffFromMax) / float(range * 2);
             const auto normalizedVelocity = float(note._velocity) / 127.0f;
 
-            p->redLeds[i].setPWMValue(uint8_t(100.0f * normalizedVelocity * (1.0f - normalizedDiff)));
-            p->greenLeds[i].setPWMValue(uint8_t(100.0f * normalizedVelocity * normalizedDiff));
+            p->redLeds[i].setPWMValue(normalizedVelocity * (1.0f - normalizedDiff));
+            p->greenLeds[i].setPWMValue(normalizedVelocity * normalizedDiff);
         }
     }
 }

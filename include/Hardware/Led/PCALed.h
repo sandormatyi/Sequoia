@@ -13,7 +13,7 @@ public:
 protected:
     void _turnOn() override;
     void _turnOff() override;
-    void _setPWMValue(uint8_t percent) override;
+    void _setPWMValue(float normalizedValue) override;
 
 private:
     PCA9685 &_pca;

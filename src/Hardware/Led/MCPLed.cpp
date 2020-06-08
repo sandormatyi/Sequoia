@@ -26,6 +26,6 @@ void MCPLed::_turnOff()
     _mcp.digitalWrite(_fields.pin, _fields.inverted ? HIGH : LOW);
 }
 
-void MCPLed::_setPWMValue(uint8_t percent)
+void MCPLed::_setPWMValue(float normalizedValue)
 {
 }

@@ -397,7 +397,7 @@ void loop()
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
         } else {
-            const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
+            const auto value = round(p->blackSlider.readNormalizedRawValue() * 127);
             const auto channel = seq->getCurrentInstrument().getDefaultNote()._channel;
             const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][1];
             DBG("CC %d: %d\n", ccNumber, value);
@@ -443,6 +443,6 @@ void loop()
     if (muteMode) {
         p->greenLed.turnOn();
     }
-    
+
     p->updateLeds();
 }

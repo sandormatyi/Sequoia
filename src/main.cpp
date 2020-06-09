@@ -333,11 +333,11 @@ void loop()
         printInstrumentInfo(seq->getCurrentInstrument());
     }
     if (p->redButton.fallingEdge()) {
-        const Scale scale = Scale(p->blackSlider1.readNormalizedRawValue() * 4);
+        const Scale scale = Scale(round(p->blackSlider1.readNormalizedRawValue() * 4));
         const auto probability = p->blackSlider2.readNormalizedRawValue();
         printRandomizeInfo(scale, probability);
     } else if (p->redButton.risingEdge()) {
-        const Scale scale = Scale(p->blackSlider1.readNormalizedRawValue() * 4);
+        const Scale scale = Scale(round(p->blackSlider1.readNormalizedRawValue() * 4));
         const auto probability = p->blackSlider2.readNormalizedRawValue();
         seq->getCurrentInstrument().randomize(scale, probability);
         printInstrumentInfo(seq->getCurrentInstrument());
@@ -358,7 +358,7 @@ void loop()
     if (blackSlider1Updated) {
         const auto sliderValue = p->blackSlider1.readNormalizedRawValue();
         if (randomMode) {
-            const Scale scale = Scale(p->blackSlider1.readNormalizedRawValue() * 4);
+        const Scale scale = Scale(round(p->blackSlider1.readNormalizedRawValue() * 4));
             const auto probability = p->blackSlider2.readNormalizedRawValue();
             printRandomizeInfo(scale, probability);
         } else if (instrumentEditMode) {
@@ -387,7 +387,7 @@ void loop()
     if (blackSlider2Updated) {
         const auto sliderValue = p->blackSlider2.readNormalizedRawValue();
         if (randomMode) {
-            const Scale scale = Scale(p->blackSlider1.readNormalizedRawValue() * 4);
+        const Scale scale = Scale(round(p->blackSlider1.readNormalizedRawValue() * 4));
             const auto probability = p->blackSlider2.readNormalizedRawValue();
             printRandomizeInfo(scale, probability);
         } else if (instrumentEditMode) {

@@ -116,16 +116,28 @@ Peripherals::Peripherals()
     , greenLed(mcp2, PIN_LED_GREEN)
     // Sliders
     , instrumentSliders {
-        TeensySlider(PIN_POT_INST_1),
-        TeensySlider(PIN_POT_INST_2),
-        TeensySlider(PIN_POT_INST_3),
-        TeensySlider(PIN_POT_INST_4)}
-    , redSlider(PIN_POT_RED)
-    , blackSlider(PIN_POT_BLACK)
+        std::array<MCPSlider, s_numSliderRows> {
+            MCPSlider(adc, PIN_ADC_INST_1_TOP),
+            MCPSlider(adc, PIN_ADC_INST_1_BOT)},
+        std::array<MCPSlider, s_numSliderRows> {
+            MCPSlider(adc, PIN_ADC_INST_2_TOP),
+            MCPSlider(adc, PIN_ADC_INST_2_BOT)}, 
+        std::array<MCPSlider, s_numSliderRows> {
+            MCPSlider(adc, PIN_ADC_INST_3_TOP),
+            MCPSlider(adc, PIN_ADC_INST_3_BOT)}, 
+        std::array<MCPSlider, s_numSliderRows> {
+            MCPSlider(adc, PIN_ADC_INST_4_TOP),
+            MCPSlider(adc, PIN_ADC_INST_4_BOT)}
+    }
+    , redSlider1 (PIN_POT_RED_1)
+    , redSlider2 (PIN_POT_RED_2)
+    , blackSlider1 (PIN_POT_BLACK_1)
+    , blackSlider2 (PIN_POT_BLACK_2)
 {
-    DBG("Size of MCP: %d\n", sizeof(Adafruit_MCP23017));
+    DBG("Size of MCP23017: %d\n", sizeof(Adafruit_MCP23017));
     DBG("Size of PCA: %d\n", sizeof(PCA9685));
     DBG("Size of SLD: %d\n", sizeof(LedControl));
+    DBG("Size of MCP3008: %d\n", sizeof(Adafruit_MCP3008));
 
     DBG("Size of TeensyLed: %d\n", sizeof(TeensyLed));
     DBG("Size of MCPLed: %d\n", sizeof(MCPLed));
@@ -133,6 +145,8 @@ Peripherals::Peripherals()
     DBG("Size of TeensyButton: %d\n", sizeof(TeensyButton));
     DBG("Size of MCPButton: %d\n", sizeof(MCPButton));
     DBG("Size of MCPInterruptButton: %d\n", sizeof(MCPInterruptButton));
+    DBG("Size of TeensySlider: %d\n", sizeof(TeensySlider));
+    DBG("Size of MCPSlider: %d\n", sizeof(MCPSlider));
 
     //mcpThis = &mcp1;
 }
@@ -153,6 +167,7 @@ void Peripherals::init(unsigned long startupDelay)
 
     mcp1.begin(0);
     mcp2.begin(1);
+    adc.begin(PIN_ADC_CLK, PIN_ADC_DIN, PIN_ADC_DOUT, PIN_ADC_CS);
 
     // mcp1.setupInterrupts(true, false, LOW);
     // pinMode(20, INPUT);
@@ -186,10 +201,13 @@ void Peripherals::init(unsigned long startupDelay)
     blueButton.init();
     greenButton.init();
 
-    redSlider.init();
-    blackSlider.init();
-    for (auto &slider : instrumentSliders)
-        slider.init();
+    redSlider1.init();
+    redSlider2.init();
+    blackSlider1.init();
+    blackSlider2.init();
+    for (auto &sliderRow : instrumentSliders)
+        for (auto& slider : sliderRow) 
+            slider.init();
 }
 
 void Peripherals::updateButtons()

@@ -2,19 +2,23 @@
 
 enum Teensy_Pins
 {
+  PIN_ADC_CS = 5,
+  PIN_ADC_DIN = 4,
+  PIN_ADC_DOUT = 3,
+  PIN_ADC_CLK = 2,
+
   PIN_SLD_DIN = 10,
   PIN_SLD_CLK = 11,
   PIN_SLD_CS = 12,
 
-  PIN_POT_RED = 23,
-  PIN_POT_BLACK = 22,
-  PIN_POT_INST_1 = 14,
-  PIN_POT_INST_2 = 15,
-  PIN_POT_INST_3 = 20,
-  PIN_POT_INST_4 = 21 
+  PIN_POT_RED_1 = 23,
+  PIN_POT_BLACK_1 = 22,
+  PIN_POT_RED_2 = 21,
+  PIN_POT_BLACK_2 = 20
 };
 
-enum MCP_1_Pins {
+enum MCP_1_Pins 
+{
   PIN_PB_1 = 7,
   PIN_PB_2 = 6,
   PIN_PB_3 = 5,
@@ -34,7 +38,8 @@ enum MCP_1_Pins {
   PIN_PB_16 = 15
 };
 
-enum MCP_2_Pins {
+enum MCP_2_Pins 
+{
   PIN_PB_INST_1 = 8,
   PIN_PB_INST_2 = 9,
   PIN_PB_INST_3 = 10,
@@ -52,4 +57,16 @@ enum MCP_2_Pins {
   PIN_LED_RED = 2,
   PIN_LED_BLUE = 1,
   PIN_LED_GREEN = 0,
+};
+
+enum MCP_3008_Pins 
+{
+  PIN_ADC_INST_1_TOP = 0,
+  PIN_ADC_INST_1_BOT = 1,
+  PIN_ADC_INST_2_TOP = 2,
+  PIN_ADC_INST_2_BOT = 3,
+  PIN_ADC_INST_3_TOP = 4,
+  PIN_ADC_INST_3_BOT = 5,
+  PIN_ADC_INST_4_TOP = 6,
+  PIN_ADC_INST_4_BOT = 7
 };

@@ -1,6 +1,7 @@
 #include <PCA9685.h>
 #include <LedControl.h>
 #include <Adafruit_MCP23017.h>
+#include <Adafruit_MCP3008.h>
 #include <array>
 #include <vector>
 #include <memory>
@@ -10,9 +11,12 @@
 #include "Hardware/Led/MCPLed.h"
 #include "Hardware/Led/PCALed.h"
 #include "Hardware/Slider/TeensySlider.h"
+#include "Hardware/Slider/MCPSlider.h"
 
 struct Peripherals
 {
+    enum SliderRows { Top = 0, Bottom = 1, s_numSliderRows };
+
     Peripherals();
 
     void init(unsigned long startupDelay);
@@ -23,6 +27,8 @@ struct Peripherals
     LedControl sld;
     Adafruit_MCP23017 mcp1;
     Adafruit_MCP23017 mcp2;
+    Adafruit_MCP3008 adc;
+
     PCA9685 pca1;
     PCA9685 pca2;
 
@@ -42,7 +48,9 @@ struct Peripherals
     MCPLed blueLed;
     MCPLed greenLed;
 
-    std::array<TeensySlider, 4> instrumentSliders;
-    TeensySlider redSlider;
-    TeensySlider blackSlider;
+    std::array<std::array<MCPSlider, s_numSliderRows>, 4> instrumentSliders;
+    TeensySlider redSlider1;
+    TeensySlider redSlider2;
+    TeensySlider blackSlider1;
+    TeensySlider blackSlider2;
 };

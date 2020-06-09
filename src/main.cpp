@@ -217,10 +217,13 @@ void setup()
     p->clearLeds();
     p->updateLeds();
     p->updateButtons();
-    p->redSlider.update();
-    p->blackSlider.update();
-    for (auto &slider : p->instrumentSliders)
-        slider.update();
+    p->redSlider1.update();
+    p->redSlider2.update();
+    p->blackSlider1.update();
+    p->blackSlider2.update();
+    for (auto &sliderRow : p->instrumentSliders)
+        for (auto &slider : sliderRow) 
+            slider.update();
 
     playStartupAnimation();
     printInstrumentInfo(seq->getCurrentInstrument());
@@ -234,8 +237,10 @@ void loop()
 {
     usbMIDI.read();
 
-    const auto blackSliderUpdated = p->blackSlider.update();
-    const auto redSliderUpdated = p->redSlider.update();
+    const auto blackSlider1Updated = p->blackSlider1.update();
+    const auto blackSlider2Updated = p->blackSlider2.update();
+    const auto redSlider1Updated = p->redSlider1.update();
+    const auto redSlider2Updated = p->redSlider2.update();
     p->updateButtons();
 
     const bool clearPressed = p->yellowButton.read() == LOW;
@@ -351,67 +356,76 @@ void loop()
     if (muteReleased) {
         seq->muteAllInstruments(false);
     }
-    if (redSliderUpdated) {
+    if (blackSlider1Updated) {
+        const auto sliderValue = p->blackSlider1.readNormalizedRawValue();
         if (instrumentEditMode) {
-            const auto newPitch = round(p->redSlider.readNormalizedRawValue() * 24);
+            const auto newPitch = round(sliderValue * 24);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
             note._noteNumber = 36u + newPitch;
             instrument.setDefaultNote(note);
             printNoteInfo(note);
         } else if (editedNote > -1) {
-            const auto newPitch = round(p->redSlider.readNormalizedRawValue() * 24) - 12;
+            const auto newPitch = round(sliderValue * 24) - 12;
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getNote(editedNote);
             note._noteNumber = instrument.getDefaultNote()._noteNumber + newPitch;
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
         } else if (syncMode == SyncMode::Internal && p->blueButton.read() == LOW) {
-            const auto value = p->redSlider.readNormalizedRawValue() * 2.0;
+            const auto value = sliderValue * 2.0;
             bpm = 60.0 * pow(2.0, value);
             DBG("BPM is %d\n", (int)bpm);
             const auto microsecondsPerStep = 1'000'000.0 / (bpm / 60.0 * 4.0);
             internalMetronome.update(microsecondsPerStep);
             printBpmInfo(bpm);
-        } else {
-            const auto value = round(p->redSlider.readNormalizedRawValue() * 127);
-            const auto channel = seq->getCurrentInstrument().getDefaultNote()._channel;
-            const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][0];
-            DBG("CC %d: %d\n", ccNumber, value);
-            usbMIDI.sendControlChange(ccNumber, value, channel);
         }
     }
-    if (blackSliderUpdated) {
+    if (blackSlider2Updated) {
+        const auto sliderValue = p->blackSlider2.readNormalizedRawValue();
         if (instrumentEditMode) {
-            const auto newValue = round(p->blackSlider.readNormalizedRawValue() * 127);
+            const auto newValue = round(sliderValue * 127);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
             note._velocity = newValue;
             instrument.setDefaultNote(note);
             printNoteInfo(note);
         } else if (editedNote > -1) {
-            const auto newValue = round(p->blackSlider.readNormalizedRawValue() * 127);
+            const auto newValue = round(sliderValue * 127);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getNote(editedNote);
             note._velocity = newValue;
             instrument.setNote(editedNote, note);
             printNoteInfo(note);
-        } else {
-            const auto value = round(p->blackSlider.readNormalizedRawValue() * 127);
-            const auto channel = seq->getCurrentInstrument().getDefaultNote()._channel;
-            const auto ccNumber = CC::instrumentControls[seq->getCurrentInstrumentIdx()][1];
-            DBG("CC %d: %d\n", ccNumber, value);
-            usbMIDI.sendControlChange(ccNumber, value, channel);
         }
     }
+    if (redSlider1Updated) {
+        const auto value = round(p->redSlider1.readNormalizedRawValue() * 127);
+        const auto channel = CC::s_globalCCChannel;
+        const auto cc = CC::globalControls[0];
+        DBG("CC %d: %d\n", cc, value);
+        usbMIDI.sendControlChange(cc, value, channel);
+    }
+    if (redSlider2Updated) {
+        const auto value = round(p->redSlider2.readNormalizedRawValue() * 127);
+        const auto channel = CC::s_globalCCChannel;
+        const auto cc = CC::globalControls[1];
+        DBG("CC %d: %d\n", cc, value);
+        usbMIDI.sendControlChange(cc, value, channel);
+    }
+
     for (size_t i = 0; i < p->instrumentSliders.size(); ++i) {
-        if (p->instrumentSliders[i].update()) {
-            const auto value = round(p->instrumentSliders[i].readNormalizedRawValue() * 127);
-            const auto channel = CC::s_globalCCChannel;
-            const auto cc = CC::globalControls[i];
-            DBG("CC %d: %d\n", cc, value);
-            usbMIDI.sendControlChange(cc, value, channel);
+        for (size_t j = 0; j < Peripherals::s_numSliderRows; ++j) {
+            if (p->instrumentSliders[i][j].update()) {
+                const auto value = round(p->instrumentSliders[i][j].readNormalizedRawValue() * 127);
+                const auto& instrument = seq->getInstrument(i);
+                const auto channel = instrument.getDefaultNote()._channel;
+                const auto ccNumber = CC::instrumentControls[i][j];
+                DBG("CC %d: %d\n", ccNumber, value);
+                usbMIDI.sendControlChange(ccNumber, value, channel);
+            }
         }
+           
     }
 
     p->clearLeds();

@@ -9,6 +9,5 @@ public:
 
     virtual void init() = 0;
     virtual bool update() = 0;
-    virtual uint16_t readLevel() const = 0;
     virtual float readNormalizedRawValue() const = 0;
 };

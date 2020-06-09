@@ -1,9 +1,8 @@
 #include "Hardware/Slider/TeensySlider.h"
 #include <Arduino.h>
 
-TeensySlider::TeensySlider(uint8_t pin, uint8_t nLevels)
+TeensySlider::TeensySlider(uint8_t pin)
     : _pin(pin)
-    , _nLevels(nLevels)
 {
 }
 
@@ -13,28 +12,21 @@ void TeensySlider::init()
 }
 
 bool TeensySlider::update()
-{
-    const auto newValue = analogRead(_pin);
-    const auto newLevel = getLevel(newValue);
-    const auto currentLevel = getLevel(_value);
-    _value = newValue;
-
-    return currentLevel != newLevel;
-}
-
-uint16_t TeensySlider::readLevel() const
-{
-    return getLevel(_value);
+{    
+    auto newValue = analogRead(_pin);
+    newValue = analogRead(_pin);
+    newValue = constrain(newValue, s_deadband, s_maxValue - s_deadband);
+    newValue = map(newValue, s_deadband, s_maxValue - s_deadband, 0, s_maxValue);
+    if ((newValue < (_value - s_tolerance)) || (newValue > (_value + s_tolerance))) {
+        _value = newValue;
+        return true;
+    }
+    return false;
 }
 
 float TeensySlider::readNormalizedRawValue() const
 {
     return getNormalizedValue(_value);
-}
-
-uint16_t TeensySlider::getLevel(int value) const
-{
-    return round(float(value * _nLevels) / s_maxValue);
 }
 
 float TeensySlider::getNormalizedValue(int value) const

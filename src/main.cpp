@@ -29,6 +29,20 @@ PlayHead* playHead;
 
 std::array<bool, 16> buttonStates;
 
+void printRandomizeInfo(const Scale scale, const float probability) 
+{
+    p->sld.clearDisplay(0);
+
+    p->sld.setChar(0, 7, scaleNames[scale][0], false);
+    p->sld.setChar(0, 6, scaleNames[scale][1], false);
+    p->sld.setChar(0, 5, scaleNames[scale][2], false);
+
+    const auto percent = round(probability * 100);
+    p->sld.setChar(0, 2, percent / 100, false);
+    p->sld.setChar(0, 1, (percent % 100) / 10, false);
+    p->sld.setChar(0, 0, percent % 10, false);
+}
+
 void printInstrumentInfo(const Instrument& instrument)
 {
     p->sld.clearDisplay(0);
@@ -205,6 +219,7 @@ void setup()
     Wire.begin();
     p = new Peripherals();
     p->init(startupDelay);
+    randomSeed(analogRead(0));
     DBG("Peripherals initialized, free RAM: %d\n", FreeRam());
 
     usbMIDI.setHandleRealTimeSystem(midiRealtimeCallback);
@@ -244,22 +259,14 @@ void loop()
     p->updateButtons();
 
     const bool clearPressed = p->yellowButton.read() == LOW;
-    const bool redButtonPressed = p->redButton.fallingEdge();
-    const bool blueButtonPressed = p->blueButton.fallingEdge();
     const bool mutePressed = p->greenButton.fallingEdge();
     const bool muteReleased = p->greenButton.risingEdge();
     const bool muteMode = p->greenButton.read() == LOW;
+    const bool randomMode = p->redButton.read() == LOW;
 
     bool instrumentEditMode = false;
     for (auto& button : p->instrumentButtons)
         instrumentEditMode |= button.read() == LOW;
-
-    // const bool clearPressed = false;
-    // const bool positivePressed = false;
-    // const bool blueButtonPressed = false;
-    // const bool mutePressed = false;
-    // const bool muteReleased = false;
-    // const bool muteMode = false;
 
     for (size_t i = 0; i < p->stepButtons.size(); ++i) {
         if (p->stepButtons[i].fallingEdge()) {
@@ -308,39 +315,31 @@ void loop()
         }
         return;
     }
-    if (redButtonPressed || blueButtonPressed) {
-        const auto increment = redButtonPressed ? 1 : -1;
-        if (instrumentEditMode) {
-            auto &instrument = seq->getCurrentInstrument();
-            Note note = instrument.getDefaultNote();
-            note._noteNumber += increment;
-            instrument.setDefaultNote(note);
-            printInstrumentInfo(instrument);
-        } else if (editedNote > -1) {
-            auto &instrument = seq->getCurrentInstrument();
-            Note note = instrument.getNote(editedNote);
-            note._noteNumber += increment;
-            instrument.setNote(editedNote, note);
-            printNoteInfo(note);
+    if (p->blueButton.fallingEdge()) {
+        if (playHead->isPlaying()) {
+            playHead->stop();
+            internalMetronome.end();
+            syncMode = SyncMode::Midi;
+            usbMIDI.setHandleRealTimeSystem(midiRealtimeCallback);
+            playHead->stop();
         } else {
-            if (blueButtonPressed) {
-                if (playHead->isPlaying()) {
-                    playHead->stop();
-                    internalMetronome.end();
-                    syncMode = SyncMode::Midi;
-                    usbMIDI.setHandleRealTimeSystem(midiRealtimeCallback);
-                    playHead->stop();
-                } else {
-                    syncMode = SyncMode::Internal;
-                    usbMIDI.setHandleRealTimeSystem(nullptr);
-                    playHead->start();
-                    const auto microsecondsPerStep = 1'000'000.0 / (bpm / 60.0 * 4.0);
-                    internalMetronome.begin(timerCallback, microsecondsPerStep);
-                }
-            }
+            syncMode = SyncMode::Internal;
+            usbMIDI.setHandleRealTimeSystem(nullptr);
+            playHead->start();
+            const auto microsecondsPerStep = 1'000'000.0 / (bpm / 60.0 * 4.0);
+            internalMetronome.begin(timerCallback, microsecondsPerStep);
         }
+    } else if (p->blueButton.risingEdge()) {
+        printInstrumentInfo(seq->getCurrentInstrument());
     }
-    if (p->blueButton.risingEdge()) {
+    if (p->redButton.fallingEdge()) {
+        const Scale scale = Scale(p->blackSlider1.readNormalizedRawValue() * 4);
+        const auto probability = p->blackSlider2.readNormalizedRawValue();
+        printRandomizeInfo(scale, probability);
+    } else if (p->redButton.risingEdge()) {
+        const Scale scale = Scale(p->blackSlider1.readNormalizedRawValue() * 4);
+        const auto probability = p->blackSlider2.readNormalizedRawValue();
+        seq->getCurrentInstrument().randomize(scale, probability);
         printInstrumentInfo(seq->getCurrentInstrument());
     }
 
@@ -358,7 +357,11 @@ void loop()
     }
     if (blackSlider1Updated) {
         const auto sliderValue = p->blackSlider1.readNormalizedRawValue();
-        if (instrumentEditMode) {
+        if (randomMode) {
+            const Scale scale = Scale(p->blackSlider1.readNormalizedRawValue() * 4);
+            const auto probability = p->blackSlider2.readNormalizedRawValue();
+            printRandomizeInfo(scale, probability);
+        } else if (instrumentEditMode) {
             const auto newPitch = round(sliderValue * 24);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
@@ -383,7 +386,11 @@ void loop()
     }
     if (blackSlider2Updated) {
         const auto sliderValue = p->blackSlider2.readNormalizedRawValue();
-        if (instrumentEditMode) {
+        if (randomMode) {
+            const Scale scale = Scale(p->blackSlider1.readNormalizedRawValue() * 4);
+            const auto probability = p->blackSlider2.readNormalizedRawValue();
+            printRandomizeInfo(scale, probability);
+        } else if (instrumentEditMode) {
             const auto newValue = round(sliderValue * 127);
             auto &instrument = seq->getCurrentInstrument();
             Note note = instrument.getDefaultNote();
@@ -456,6 +463,9 @@ void loop()
     }
     if (muteMode) {
         p->greenLed.turnOn();
+    }
+    if (randomMode) {
+        p->redLed.turnOn();
     }
 
     p->updateLeds();

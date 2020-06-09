@@ -4,6 +4,9 @@
 #include <array>
 #include "Sequencer/Note.h"
 
+enum Scale { Chromatic, Major, Minor, Harmonic_minor, Unison };
+const char scaleNames[5][4] = {"Chr", "Maj", "Min", "HMn", "Uni"};
+
 class Instrument
 {
 public:
@@ -22,6 +25,8 @@ public:
     void toggleNote(uint8_t idx);
 
     void clear();
+
+    void randomize(Scale scale, float probability);
 
 private:
     char _name[7];

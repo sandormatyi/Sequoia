@@ -182,6 +182,7 @@ void midiRealtimeCallback(uint8_t msg)
 
     if (msg == START || msg == CONTINUE) {
         clockCounter = 0;
+        sendAllCCValues(*p, *seq);
         playHead->start(msg == START);
     }
 
@@ -325,6 +326,7 @@ void loop()
         } else {
             syncMode = SyncMode::Internal;
             usbMIDI.setHandleRealTimeSystem(nullptr);
+            sendAllCCValues(*p, *seq);
             playHead->start();
             const auto microsecondsPerStep = 1'000'000.0 / (bpm / 60.0 * 4.0);
             internalMetronome.begin(timerCallback, microsecondsPerStep);

@@ -15,3 +15,7 @@ struct CC {
         std::array<uint8_t, 2>{28, 29}
     };
 };
+
+class Peripherals;
+
+void sendAllCCValues(Peripherals& p, Sequencer& seq);

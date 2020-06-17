@@ -31,8 +31,9 @@ uint8_t getRelativeNote(Scale scale, float random)
 }
 }
 
-Instrument::Instrument(const char *name, Note defaultNote)
-    : _defaultNote(defaultNote)
+Instrument::Instrument(uint8_t channel, const char *name, Note defaultNote)
+    : _channel(channel)
+    , _defaultNote(defaultNote)
     , _notes()
     , _activeNotes()
 {
@@ -58,6 +59,11 @@ void Instrument::setDefaultNote(Note defaultNote)
             setNote(i, defaultNote);
         }
     }
+}
+
+uint8_t Instrument::getChannel() const
+{
+    return _channel;
 }
 
 bool Instrument::isActiveNote(uint8_t idx) const

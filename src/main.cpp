@@ -46,9 +46,8 @@ void printRandomizeInfo(const Scale scale, const float probability)
 void printInstrumentInfo(const Instrument& instrument)
 {
     p->sld.clearDisplay(0);
-    const auto& note = instrument.getDefaultNote();
     const char* name = instrument.getName();
-    p->sld.setDigit(0, 7, note._channel, true);
+    p->sld.setDigit(0, 7, instrument.getChannel(), true);
     p->sld.setChar(0, 5, name[0], false);
     p->sld.setChar(0, 4, name[1], false);
     p->sld.setChar(0, 3, name[2], false);
@@ -428,7 +427,7 @@ void loop()
             if (p->instrumentSliders[i][j].update()) {
                 const auto value = round(p->instrumentSliders[i][j].readNormalizedRawValue() * 127);
                 const auto& instrument = seq->getInstrument(i);
-                const auto channel = instrument.getDefaultNote()._channel;
+                const auto channel = instrument.getChannel();
                 const auto ccNumber = CC::instrumentControls[i][j];
                 DBG("CC %d: %d\n", ccNumber, value);
                 usbMIDI.sendControlChange(ccNumber, value, channel);

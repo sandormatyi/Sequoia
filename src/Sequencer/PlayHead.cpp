@@ -52,11 +52,17 @@ void PlayHead::playStep(uint8_t stepIdx)
 
     // previousNotes.clear();
 
-    DBG("Step %d\n", stepIdx);
-    for (const auto &note : _sequencer.getNotes(stepIdx)) {
-        DBG("\t%d sent\n", note._noteNumber);
-        // previousNotes.push_back(note);
-        usbMIDI.sendNoteOn(note._noteNumber, note._velocity, note._channel);
-        usbMIDI.sendNoteOff(note._noteNumber, note._velocity, note._channel);
+    for (size_t i = 0; i < Sequencer::s_instrumentNumber; ++i) {
+        if (_sequencer.isInstrumentMuted(i))
+            continue;
+
+        const auto& instrument = _sequencer.getInstrument(i);
+        if (instrument.isActiveNote(stepIdx)) {
+            const auto& note = instrument.getNote(stepIdx);
+            DBG("\t%d sent\n", note._noteNumber);
+            // previousNotes.push_back(note);
+            usbMIDI.sendNoteOn(note._noteNumber, note._velocity, instrument.getChannel());
+            usbMIDI.sendNoteOff(note._noteNumber, note._velocity, instrument.getChannel());
+        }
     }
 }

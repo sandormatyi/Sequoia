@@ -12,11 +12,12 @@ class Instrument
 public:
     static constexpr uint8_t s_stepNumber = 16;
 
-    Instrument(const char *name, Note defaultNote);
+    Instrument(uint8_t channel, const char *name, Note defaultNote);
 
     const char* getName() const;
     const Note &getDefaultNote() const;
     void setDefaultNote(Note defaultNote);
+    uint8_t getChannel() const;
 
     bool isActiveNote(uint8_t idx) const;
 
@@ -29,6 +30,7 @@ public:
     void randomize(Scale scale, float probability);
 
 private:
+    uint8_t _channel;
     char _name[7];
     Note _defaultNote;
     std::array<Note, s_stepNumber> _notes;

@@ -15,7 +15,7 @@ void sendAllCCValues(Peripherals& p, Sequencer& seq)
     for (size_t i = 0; i < p.instrumentSliders.size(); ++i) {
         for (size_t j = 0; j < Peripherals::s_numSliderRows; ++j) {
             const auto& instrument = seq.getInstrument(i);
-            usbMIDI.sendControlChange(CC::instrumentControls[i][j], round(p.instrumentSliders[i][j].readNormalizedRawValue() * 127), instrument.getDefaultNote()._channel);
+            usbMIDI.sendControlChange(CC::instrumentControls[i][j], round(p.instrumentSliders[i][j].readNormalizedRawValue() * 127), instrument.getChannel());
         }
     }
 }

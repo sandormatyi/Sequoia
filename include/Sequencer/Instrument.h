@@ -11,6 +11,7 @@ class Instrument
 {
 public:
     static constexpr uint8_t s_stepNumber = 16;
+    static constexpr uint16_t s_patternSizeInBytes = s_stepNumber * sizeof(Note);
 
     Instrument(uint8_t channel, const char *name, Note defaultNote);
 
@@ -28,6 +29,9 @@ public:
     void clear();
 
     void randomize(Scale scale, float probability);
+
+    void importPattern(const std::array<byte, s_patternSizeInBytes>& pattern);
+    std::array<byte, s_patternSizeInBytes> exportPattern() const;
 
 private:
     uint8_t _channel;

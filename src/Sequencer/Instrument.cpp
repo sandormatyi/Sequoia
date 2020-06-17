@@ -113,3 +113,27 @@ void Instrument::randomize(Scale scale, float probability)
         _activeNotes[i] = true;
     }
 }
+
+void Instrument::importPattern(const std::array<byte, Instrument::s_patternSizeInBytes>& pattern)
+{
+    clear();
+    for(int i = 0; i < s_stepNumber; ++i) {
+        if (pattern[i * 2 + 1] > 0) {
+            _activeNotes[i] = true;
+            _notes[i]._velocity = _defaultNote._velocity;
+        } else {
+            _notes[i]._velocity = pattern[i * 2 + 1];
+        }
+        _notes[i]._noteNumber = pattern[i * 2];
+    }
+}
+
+std::array<byte, Instrument::s_patternSizeInBytes> Instrument::exportPattern() const
+{
+    std::array<byte, Instrument::s_patternSizeInBytes> pattern;
+    for(int i = 0; i < s_stepNumber; ++i) {
+        pattern[i * 2] = _notes[i]._noteNumber;
+        pattern[i * 2 + 1] = _activeNotes[i] ? _notes[i]._velocity : 0;
+    }
+    return pattern;
+}

@@ -25,6 +25,7 @@ Peripherals::Peripherals()
     , mcp2()
     , pca1(0x0, PCA9685_MODE_LED_DIRECT, 800.0)
     , pca2(0x1, PCA9685_MODE_LED_DIRECT, 800.0)
+    , presetMemory(0b1010'010, 128/8 * 1024)
     // Buttons
     , stepButtons {
         MCPButton(mcp1, PIN_PB_1, DebounceTime),
@@ -168,6 +169,9 @@ void Peripherals::init(unsigned long startupDelay)
     mcp1.begin(0);
     mcp2.begin(1);
     adc.begin(PIN_ADC_CLK, PIN_ADC_DIN, PIN_ADC_DOUT, PIN_ADC_CS);
+
+    presetMemory.begin();
+    DBG("EEPROM size: %d Kbits\n", presetMemory.determineSize() * 8);
 
     // mcp1.setupInterrupts(true, false, LOW);
     // pinMode(20, INPUT);

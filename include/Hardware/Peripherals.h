@@ -2,6 +2,7 @@
 #include <LedControl.h>
 #include <Adafruit_MCP23017.h>
 #include <Adafruit_MCP3008.h>
+#include <I2C_eeprom.h>
 #include <array>
 #include <vector>
 #include <memory>
@@ -27,10 +28,12 @@ struct Peripherals
     LedControl sld;
     Adafruit_MCP23017 mcp1;
     Adafruit_MCP23017 mcp2;
+    Adafruit_MCP23017 mcp3;
     Adafruit_MCP3008 adc;
 
     PCA9685 pca1;
     PCA9685 pca2;
+    I2C_eeprom presetMemory;
 
     std::array<MCPButton, 16> stepButtons;
     std::array<MCPButton, 4> instrumentButtons;

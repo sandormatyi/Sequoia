@@ -12,6 +12,7 @@
 #include "Sequencer/Sequencer.h"
 #include "Sequencer/PlayHead.h"
 #include "Sequencer/CC.h"
+#include "Sequencer/PresetHandler.h"
 #include "Hardware/Slider/TeensySlider.h"
 #include "DBG.h"
 #include <glob.h>
@@ -263,6 +264,8 @@ void loop()
     const bool muteReleased = p->greenButton.risingEdge();
     const bool muteMode = p->greenButton.read() == LOW;
     const bool randomMode = p->redButton.read() == LOW;
+    const bool saveMode = p->saveButton.read() == LOW;
+    const bool loadMode = !saveMode && (p->loadButton.read() == LOW);
 
     bool instrumentEditMode = false;
     for (auto& button : p->instrumentButtons)
@@ -271,12 +274,25 @@ void loop()
     for (size_t i = 0; i < p->stepButtons.size(); ++i) {
         if (p->stepButtons[i].fallingEdge()) {
             DBG("Button %d pressed\n", i);
-            const auto noteIdx = currentBar * 8 + i;
-            auto &instrument = seq->getCurrentInstrument();
-            instrument.toggleNote(noteIdx);
-            if (instrument.isActiveNote(noteIdx)) {
-                editedNote = noteIdx;
-                printNoteInfo(seq->getCurrentInstrument().getNote(noteIdx));
+            if (saveMode) {
+                const auto bankIdx = seq->getCurrentInstrumentIdx();
+                const auto presetIdx = i;
+                DBG("Saving preset %d - %d\n", bankIdx, presetIdx);
+                PresetHandler::savePresetToBank(p->presetMemory, bankIdx, presetIdx, seq->getCurrentInstrument().exportPattern());
+                delay(5);
+            } else if (loadMode) {
+                const auto bankIdx = seq->getCurrentInstrumentIdx();
+                const auto presetIdx = i;
+                DBG("Loading preset %d - %d\n", bankIdx, presetIdx);
+                seq->getCurrentInstrument().importPattern(PresetHandler::loadPresetFromBank(p->presetMemory, bankIdx, presetIdx));
+                delay(5);
+            } else {
+                auto &instrument = seq->getCurrentInstrument();
+                instrument.toggleNote(i);
+                if (instrument.isActiveNote(i)) {
+                    editedNote = i;
+                    printNoteInfo(seq->getCurrentInstrument().getNote(i));
+                }
             }
         } else if (p->stepButtons[i].risingEdge()) {
             editedNote = -1;
@@ -450,10 +466,14 @@ void loop()
     }
 
     // Update step LEDs
-    colorActiveNotes(seq->getCurrentInstrument(), currentBar);
-    const auto currentStepLed = playHead->getCurrentStep() - currentBar * 8;
-    if (playHead->isPlaying() && (currentStepLed >= 0 && currentStepLed < 16)) {
-        p->greenLeds[currentStepLed].turnOn();
+    if (saveMode || loadMode) {
+
+    } else {
+        colorActiveNotes(seq->getCurrentInstrument(), currentBar);
+        const auto currentStepLed = playHead->getCurrentStep() - currentBar * 8;
+        if (playHead->isPlaying() && (currentStepLed >= 0 && currentStepLed < 16)) {
+            p->greenLeds[currentStepLed].turnOn();
+        }
     }
 
     // Update status LEDs
@@ -467,6 +487,9 @@ void loop()
     }
     if (randomMode) {
         p->redLed.turnOn();
+    }
+    if (saveMode || loadMode) {
+        p->yellowLed.turnOn();
     }
 
     p->updateLeds();

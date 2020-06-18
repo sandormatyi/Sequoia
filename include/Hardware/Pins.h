@@ -59,6 +59,12 @@ enum MCP_2_Pins
   PIN_LED_GREEN = 0,
 };
 
+enum MCP_3_Pins 
+{
+  PIN_PB_SAVE = 0,
+  PIN_PB_LOAD = 1,
+};
+
 enum MCP_3008_Pins 
 {
   PIN_ADC_INST_1_TOP = 0,

@@ -41,6 +41,8 @@ struct Peripherals
     MCPButton redButton;
     MCPButton blueButton;
     MCPButton greenButton;
+    MCPButton saveButton;
+    MCPButton loadButton;
 
     std::array<PCALed, 16> redLeds;
     std::array<PCALed, 16> greenLeds;

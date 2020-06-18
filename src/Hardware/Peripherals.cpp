@@ -53,6 +53,8 @@ Peripherals::Peripherals()
     , redButton(mcp2, PIN_PB_RED, DebounceTime)
     , blueButton(mcp2, PIN_PB_BLUE, DebounceTime)
     , greenButton(mcp2, PIN_PB_GREEN, DebounceTime)
+    , saveButton(mcp3, PIN_PB_SAVE, DebounceTime)
+    , loadButton(mcp3, PIN_PB_LOAD, DebounceTime)
     // Leds
     , redLeds {
         PCALed(pca1, PCA9685_LED0, true),
@@ -168,6 +170,7 @@ void Peripherals::init(unsigned long startupDelay)
 
     mcp1.begin(0);
     mcp2.begin(1);
+    mcp3.begin(2);
     adc.begin(PIN_ADC_CLK, PIN_ADC_DIN, PIN_ADC_DOUT, PIN_ADC_CS);
 
     presetMemory.begin();
@@ -204,6 +207,8 @@ void Peripherals::init(unsigned long startupDelay)
     redButton.init();
     blueButton.init();
     greenButton.init();
+    saveButton.init();
+    loadButton.init();
 
     redSlider1.init();
     redSlider2.init();
@@ -226,6 +231,8 @@ void Peripherals::updateButtons()
     redButton.update();
     blueButton.update();
     greenButton.update();
+    saveButton.update();
+    loadButton.update();
 }
 
 void Peripherals::clearLeds() 

@@ -118,13 +118,12 @@ void Instrument::importPattern(const std::array<byte, Instrument::s_patternSizeI
 {
     clear();
     for(int i = 0; i < s_stepNumber; ++i) {
-        if (pattern[i * 2 + 1] > 0) {
+        _notes[i] = {pattern[i * 2], pattern[i * 2 + 1]};
+        if (_notes[i]._velocity > 0) {
             _activeNotes[i] = true;
-            _notes[i]._velocity = _defaultNote._velocity;
         } else {
-            _notes[i]._velocity = pattern[i * 2 + 1];
+            _notes[i]._velocity = _defaultNote._velocity;
         }
-        _notes[i]._noteNumber = pattern[i * 2];
     }
 }
 

@@ -1,5 +1,5 @@
 # MidiSequencer
-Hardware Midi sequencer using built around a Teensy LC board
+Hardware Midi sequencer built around a Teensy LC board
 
 ## Progress videos
 - [v0.1](https://www.youtube.com/watch?v=wviU7Qo1Lao)

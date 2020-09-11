@@ -20,4 +20,5 @@ private:
 public:
     static void savePresetToBank(I2C_eeprom& ee, uint8_t bankIdx, uint8_t presetIdx, const std::array<uint8_t, s_presetSize>& data);
     static std::array<uint8_t, s_presetSize> loadPresetFromBank(I2C_eeprom& ee, uint8_t bankIdx, uint8_t presetIdx);
+    static std::array<bool, s_presetPerBank> getPresetStates(I2C_eeprom& ee, uint8_t bankIdx);
 };

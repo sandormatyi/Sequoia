@@ -266,6 +266,7 @@ void loop()
     const bool randomMode = p->redButton.read() == LOW;
     const bool saveMode = p->saveButton.read() == LOW;
     const bool loadMode = !saveMode && (p->loadButton.read() == LOW);
+    static bool previousSaveOrLoad = false;
 
     bool instrumentEditMode = false;
     for (auto& button : p->instrumentButtons)
@@ -467,7 +468,13 @@ void loop()
 
     // Update step LEDs
     if (saveMode || loadMode) {
+        static std::array<bool, 16U> states;
+        if (!previousSaveOrLoad)
+            states = PresetHandler::getPresetStates(p->presetMemory, seq->getCurrentInstrumentIdx());
 
+        for (size_t i = 0; i < p->stepButtons.size(); ++i) {
+            states[i] ? p->greenLeds[i].turnOn() : p->redLeds[i].turnOn();
+        }
     } else {
         colorActiveNotes(seq->getCurrentInstrument(), currentBar);
         const auto currentStepLed = playHead->getCurrentStep() - currentBar * 8;
@@ -475,6 +482,8 @@ void loop()
             p->greenLeds[currentStepLed].turnOn();
         }
     }
+
+    previousSaveOrLoad == saveMode || loadMode;
 
     // Update status LEDs
     if (playHead->isPlaying()) {

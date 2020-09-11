@@ -27,3 +27,19 @@ std::array<uint8_t, PresetHandler::s_presetSize> PresetHandler::loadPresetFromBa
     printBlock(data);
     return data;
 }
+
+std::array<bool, PresetHandler::s_presetPerBank> PresetHandler::getPresetStates(I2C_eeprom& ee, uint8_t bankIdx)
+{
+    std::array<bool, PresetHandler::s_presetPerBank> result;
+    for(int i = 0; i < s_presetPerBank; i++) {
+        result[i] = false;
+        const auto& preset = loadPresetFromBank(ee, bankIdx, i);
+        for(int j = 0; j < preset.size(); j++) {
+            if (j % 2 == 1 && preset[j] > 0) {
+                result[i] = true;
+                break;
+            }
+        }
+    }
+    return result;
+}

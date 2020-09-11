@@ -19,7 +19,7 @@ private:
 
     static constexpr int s_maxValue = 1023;
     static constexpr int s_deadband = 24;
-    static constexpr int s_tolerance = 6;
+    static constexpr int s_tolerance = 16;
     Adafruit_MCP3008& _adc;
     uint8_t _channel;
     uint16_t _value;

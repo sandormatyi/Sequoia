@@ -18,7 +18,7 @@ private:
 
     static constexpr int s_maxValue = 1023;
     static constexpr int s_deadband = 24;
-    static constexpr int s_tolerance = 6;
+    static constexpr int s_tolerance = 16;
     uint8_t _pin;
     uint16_t _value;
 };

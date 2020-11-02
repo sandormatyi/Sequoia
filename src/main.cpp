@@ -480,7 +480,7 @@ void loop()
     }
   }
 
-  previousSaveOrLoad == saveMode || loadMode;
+  previousSaveOrLoad = saveMode || loadMode;
 
   // Update status LEDs
   if (playHead->isPlaying()) {

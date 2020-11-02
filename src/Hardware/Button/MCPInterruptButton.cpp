@@ -1,7 +1,7 @@
 #include "Hardware/Button/MCPInterruptButton.h"
 #include "Adafruit_MCP23017.h"
 
-MCPInterruptButton::MCPInterruptButton(Adafruit_MCP23017 &mcp, uint8_t pin)
+MCPInterruptButton::MCPInterruptButton(Adafruit_MCP23017& mcp, uint8_t pin)
     : _mcp(mcp)
     , _pin(pin)
 {
@@ -9,27 +9,27 @@ MCPInterruptButton::MCPInterruptButton(Adafruit_MCP23017 &mcp, uint8_t pin)
 
 void MCPInterruptButton::init()
 {
-    _mcp.pinMode(_pin, INPUT);
-    _mcp.pullUp(_pin, HIGH);  // turn on a 100K pullup internally
-    _mcp.setupInterruptPin(_pin, FALLING); 
+  _mcp.pinMode(_pin, INPUT);
+  _mcp.pullUp(_pin, HIGH); // turn on a 100K pullup internally
+  _mcp.setupInterruptPin(_pin, FALLING);
 }
 
 int MCPInterruptButton::update()
 {
-    return 0;
+  return 0;
 }
 
 int MCPInterruptButton::read()
 {
-    return 0;
+  return 0;
 }
 
-bool MCPInterruptButton::risingEdge() 
+bool MCPInterruptButton::risingEdge()
 {
-    return false;
+  return false;
 }
 
-bool MCPInterruptButton::fallingEdge() 
+bool MCPInterruptButton::fallingEdge()
 {
-    return false;
+  return false;
 }

@@ -11,10 +11,8 @@ bool MCPSlider::update()
 {    
     auto newValue = _adc.readADC(_channel);
     newValue = _adc.readADC(_channel);
-    newValue = constrain(newValue, s_deadband, s_maxValue - s_deadband);
-    newValue = map(newValue, s_deadband, s_maxValue - s_deadband, 0, s_maxValue);
     if ((newValue < (_value - s_tolerance)) || (newValue > (_value + s_tolerance))) {
-        _value = newValue;
+        _value = mapToDeadBand(newValue, s_maxValue, s_deadband);
         return true;
     }
     return false;

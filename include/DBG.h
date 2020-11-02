@@ -1,7 +1,6 @@
 #pragma once
 
-#define _ENABLE_SERIAL 1
-
+#define _ENABLE_SERIAL 0
 
 #if _ENABLE_SERIAL == 1
 #define DBG Serial.printf

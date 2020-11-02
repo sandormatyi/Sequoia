@@ -1,7 +1,6 @@
 #pragma once
 
-enum Teensy_Pins
-{
+enum Teensy_Pins {
   PIN_ADC_CS = 5,
   PIN_ADC_DIN = 4,
   PIN_ADC_DOUT = 3,
@@ -17,8 +16,7 @@ enum Teensy_Pins
   PIN_POT_BLACK_2 = 20
 };
 
-enum MCP_1_Pins 
-{
+enum MCP_1_Pins {
   PIN_PB_1 = 7,
   PIN_PB_2 = 6,
   PIN_PB_3 = 5,
@@ -38,8 +36,7 @@ enum MCP_1_Pins
   PIN_PB_16 = 15
 };
 
-enum MCP_2_Pins 
-{
+enum MCP_2_Pins {
   PIN_PB_INST_1 = 8,
   PIN_PB_INST_2 = 9,
   PIN_PB_INST_3 = 10,
@@ -59,14 +56,12 @@ enum MCP_2_Pins
   PIN_LED_GREEN = 0,
 };
 
-enum MCP_3_Pins 
-{
+enum MCP_3_Pins {
   PIN_PB_SAVE = 0,
   PIN_PB_LOAD = 1,
 };
 
-enum MCP_3008_Pins 
-{
+enum MCP_3008_Pins {
   PIN_ADC_INST_1_TOP = 0,
   PIN_ADC_INST_1_BOT = 1,
   PIN_ADC_INST_2_TOP = 2,

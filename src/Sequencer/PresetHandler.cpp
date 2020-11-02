@@ -34,7 +34,7 @@ std::array<bool, PresetHandler::s_presetPerBank> PresetHandler::getPresetStates(
   for (int i = 0; i < s_presetPerBank; i++) {
     result[i] = false;
     const auto& preset = loadPresetFromBank(ee, bankIdx, i);
-    for (int j = 0; j < preset.size(); j++) {
+    for (size_t j = 0; j < preset.size(); j++) {
       if (j % 2 == 1 && preset[j] > 0) {
         result[i] = true;
         break;

@@ -303,6 +303,7 @@ void loop()
       if (muteMode) {
         seq->muteInstrument(i, !seq->isInstrumentMuted(i));
       }
+      previousSaveOrLoad = false; // Update preset bank display
 
       seq->setCurrentInstrument(i);
       printInstrumentInfo(seq->getCurrentInstrument());

@@ -33,6 +33,7 @@ struct Peripherals
 
   PCA9685 pca1;
   PCA9685 pca2;
+  PCA9685 pca3;
   I2C_eeprom presetMemory;
 
   std::array<MCPButton, 16> stepButtons;
@@ -45,8 +46,8 @@ struct Peripherals
   MCPButton loadButton;
 
   std::array<PCALed, 16> redLeds;
+  std::array<PCALed, 16> blueLeds;
   std::array<PCALed, 16> greenLeds;
-  std::array<PCALed, 16>& blueLeds;
   std::array<MCPLed, 4> instrumentLeds;
   MCPLed yellowLed;
   MCPLed redLed;

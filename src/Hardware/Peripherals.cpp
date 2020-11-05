@@ -20,7 +20,11 @@ void mcpInterruptCallback()
 constexpr unsigned long DebounceTime = 10; // 10 ms debounce
 
 Peripherals::Peripherals()
-  : sld(PIN_SLD_DIN, PIN_SLD_CLK, PIN_SLD_CS), mcp1(), mcp2(), pca1(0x0, PCA9685_MODE_LED_DIRECT, 800.0), pca2(0x1, PCA9685_MODE_LED_DIRECT, 800.0), presetMemory(0b1010'010, 128 / 8 * 1024)
+  : sld(PIN_SLD_DIN, PIN_SLD_CLK, PIN_SLD_CS), mcp1(), mcp2()
+  , pca1(0x0, PCA9685_MODE_LED_DIRECT, 800.0)
+  , pca2(0x1, PCA9685_MODE_LED_DIRECT, 800.0)
+  , pca3(0x2, PCA9685_MODE_LED_DIRECT, 800.0)
+  , presetMemory(0b1010'010, 128 / 8 * 1024)
   // Buttons
   , stepButtons{
     MCPButton(mcp1, PIN_PB_1, DebounceTime),
@@ -60,6 +64,15 @@ Peripherals::Peripherals()
     PCALed(pca1, PCA9685_LED5, true),
     PCALed(pca1, PCA9685_LED6, true),
     PCALed(pca1, PCA9685_LED7, true),
+    PCALed(pca1, PCA9685_LED8, true),
+    PCALed(pca1, PCA9685_LED9, true),
+    PCALed(pca1, PCA9685_LED10,true),
+    PCALed(pca1, PCA9685_LED11,true),
+    PCALed(pca1, PCA9685_LED12,true),
+    PCALed(pca1, PCA9685_LED13,true),
+    PCALed(pca1, PCA9685_LED14,true),
+    PCALed(pca1, PCA9685_LED15,true)}
+  , blueLeds{
     PCALed(pca2, PCA9685_LED0, true),
     PCALed(pca2, PCA9685_LED1, true),
     PCALed(pca2, PCA9685_LED2, true),
@@ -67,42 +80,32 @@ Peripherals::Peripherals()
     PCALed(pca2, PCA9685_LED4, true),
     PCALed(pca2, PCA9685_LED5, true),
     PCALed(pca2, PCA9685_LED6, true),
-    PCALed(pca2, PCA9685_LED7, true)}
-  , greenLeds{
-    PCALed(pca1, PCA9685_LED8, true),
-    PCALed(pca1, PCA9685_LED9, true),
-    PCALed(pca1, PCA9685_LED10, true),
-    PCALed(pca1, PCA9685_LED11, true),
-    PCALed(pca1, PCA9685_LED12, true),
-    PCALed(pca1, PCA9685_LED13, true),
-    PCALed(pca1, PCA9685_LED14, true),
-    PCALed(pca1, PCA9685_LED15, true),
+    PCALed(pca2, PCA9685_LED7, true),
     PCALed(pca2, PCA9685_LED8, true),
     PCALed(pca2, PCA9685_LED9, true),
-    PCALed(pca2, PCA9685_LED10, true),
-    PCALed(pca2, PCA9685_LED11, true),
-    PCALed(pca2, PCA9685_LED12, true),
-    PCALed(pca2, PCA9685_LED13, true),
-    PCALed(pca2, PCA9685_LED14, true),
-    PCALed(pca2, PCA9685_LED15, true)}
-  , blueLeds(redLeds)
-      // , blueLeds {
-      //     std::make_unique<MCPLed>(mcp1, PIN_LED_1_B, true),
-      //     std::make_unique<MCPLed>(mcp1, PIN_LED_2_B, true),
-      //     std::make_unique<MCPLed>(mcp1, PIN_LED_3_B, true),
-      //     std::make_unique<MCPLed>(mcp1, PIN_LED_4_B, true),
-      //     std::make_unique<MCPLed>(mcp1, PIN_LED_5_B, true),
-      //     std::make_unique<MCPLed>(mcp1, PIN_LED_6_B, true),
-      //     std::make_unique<MCPLed>(mcp1, PIN_LED_7_B, true),
-      //     std::make_unique<MCPLed>(mcp1, PIN_LED_8_B, true),
-      //     std::make_unique<MCPLed>(mcp2, PIN_LED_9_B, true),
-      //     std::make_unique<MCPLed>(mcp2, PIN_LED_10_B, true),
-      //     std::make_unique<MCPLed>(mcp2, PIN_LED_11_B, true),
-      //     std::make_unique<MCPLed>(mcp2, PIN_LED_12_B, true),
-      //     std::make_unique<MCPLed>(mcp2, PIN_LED_13_B, true),
-      //     std::make_unique<MCPLed>(mcp2, PIN_LED_14_B, true),
-      //     std::make_unique<MCPLed>(mcp2, PIN_LED_15_B, true),
-      //     std::make_unique<MCPLed>(mcp2, PIN_LED_16_B, true)}
+    PCALed(pca2, PCA9685_LED10,true),
+    PCALed(pca2, PCA9685_LED11,true),
+    PCALed(pca2, PCA9685_LED12,true),
+    PCALed(pca2, PCA9685_LED13,true),
+    PCALed(pca2, PCA9685_LED14,true),
+    PCALed(pca2, PCA9685_LED15,true)}
+  , greenLeds{
+    PCALed(pca3, PCA9685_LED0, true),
+    PCALed(pca3, PCA9685_LED1, true),
+    PCALed(pca3, PCA9685_LED2, true),
+    PCALed(pca3, PCA9685_LED3, true),
+    PCALed(pca3, PCA9685_LED4, true),
+    PCALed(pca3, PCA9685_LED5, true),
+    PCALed(pca3, PCA9685_LED6, true),
+    PCALed(pca3, PCA9685_LED7, true),
+    PCALed(pca3, PCA9685_LED8, true),
+    PCALed(pca3, PCA9685_LED9, true),
+    PCALed(pca3, PCA9685_LED10,true),
+    PCALed(pca3, PCA9685_LED11,true),
+    PCALed(pca3, PCA9685_LED12,true),
+    PCALed(pca3, PCA9685_LED13,true),
+    PCALed(pca3, PCA9685_LED14,true),
+    PCALed(pca3, PCA9685_LED15,true)}
   , instrumentLeds{
     MCPLed(mcp2, PIN_LED_INST_1),
     MCPLed(mcp2, PIN_LED_INST_2),
@@ -161,6 +164,7 @@ void Peripherals::init(unsigned long startupDelay)
 
   pca1.setup();
   pca2.setup();
+  pca3.setup();
 
   mcp1.begin(0);
   mcp2.begin(1);
@@ -180,8 +184,8 @@ void Peripherals::init(unsigned long startupDelay)
   for (auto& led : greenLeds)
     led.init();
 
-  //for (auto& led : blueLeds)
-  //    led.init();
+  for (auto& led : blueLeds)
+    led.init();
 
   for (auto& led : instrumentLeds)
     led.init();
@@ -237,8 +241,8 @@ void Peripherals::clearLeds()
   for (auto& led : greenLeds)
     led.turnOff();
 
-  //for (auto& led : blueLeds)
-  //    led.turnOff();
+  for (auto& led : blueLeds)
+    led.turnOff();
 
   for (auto& led : instrumentLeds)
     led.turnOff();
@@ -257,8 +261,8 @@ void Peripherals::updateLeds()
   for (auto& led : greenLeds)
     led.update();
 
-  //for (auto& led : blueLeds)
-  //    led.update();
+  for (auto& led : blueLeds)
+    led.update();
 
   for (auto& led : instrumentLeds)
     led.update();
